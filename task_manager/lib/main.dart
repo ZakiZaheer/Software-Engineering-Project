@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:task_manager/database_service/supabase_client.dart';
 
 void main() async {
-  print("hehe");
-  runApp(const MainApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  await SupabaseService.initialize();
+  runApp(MainApp());
 }
 
 class MainApp extends StatelessWidget {
