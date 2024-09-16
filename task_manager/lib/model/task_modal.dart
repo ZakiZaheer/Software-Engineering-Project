@@ -1,8 +1,8 @@
 class Task {
   String title;
-  String? status;
+  bool status;
   String? description;
-  String? priority;
+  int? priority;
   String? date;
   String? time;
   String? category;
@@ -10,7 +10,7 @@ class Task {
 
   Task({
     required this.title,
-    this.status,
+    this.status = false,
     this.description,
     this.priority,
     this.date,
@@ -19,21 +19,7 @@ class Task {
     this.category,
   });
 
-  // Factory constructor to create a Task from a map (for example, when decoding JSON)
-  factory Task.fromMap(Map<String, dynamic> map) {
-    return Task(
-      title: map['title'] ?? '',
-      status: map['status'] ?? '',
-      description: map['description'] ?? '',
-      priority: map['priority'] ?? '',
-      date: map['date'] ?? '',
-      time: map['time'] ?? '',
-      category: map['category'] ?? '',
-      subtasks: List<String>.from(map['subtasks'] ?? []),
-    );
-  }
-
-  // Convert a Task instance to a map (for example, when encoding to JSON)
+ 
   Map<String, dynamic> toMap() {
     return {
       'title': title,
@@ -47,7 +33,6 @@ class Task {
     };
   }
 
-  // Optionally, you can override toString to make it easier to print the Task
   @override
   String toString() {
     return 'Task{title: $title, status: $status, description: $description, priority: $priority, date: $date, time: $time, category: $category, subtasks: $subtasks}';
