@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-void main() async {
-  print("hehe");
+void main() {
   runApp(const MainApp());
 }
 
