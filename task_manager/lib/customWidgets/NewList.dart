@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 
-class CreateNewListWidget extends StatelessWidget {
+class UpdateListPopUp extends StatelessWidget {
+  final String title;
+  final Function(String category) onSaved;
+  const UpdateListPopUp({super.key, required this.title , required this.onSaved});
+
   @override
   Widget build(BuildContext context) {
+    final textContl = TextEditingController();
     return SafeArea(
       child: SingleChildScrollView(
         child: ConstrainedBox(
@@ -13,7 +18,7 @@ class CreateNewListWidget extends StatelessWidget {
           ),
           child: Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: [
                   Color(0xFF3A8FDC),
                   Color(0xFF16607A),
@@ -23,7 +28,7 @@ class CreateNewListWidget extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(15), // Rounded corners
             ),
-            padding: EdgeInsets.all(16.0), // Padding for the entire container
+            padding: const EdgeInsets.all(16.0), // Padding for the entire container
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize:
@@ -40,14 +45,14 @@ class CreateNewListWidget extends StatelessWidget {
                           onTap: () {
                             Navigator.of(context).pop(); // Close dialog on tap
                           },
-                          child: Icon(Icons.close, color: Colors.black),
+                          child:const Icon(Icons.close, color: Colors.black),
                         ),
-                        SizedBox(
+                        const SizedBox(
                             width: 8), // Spacing between close icon and text
                         // Title
-                        Text(
-                          'Create new list',
-                          style: TextStyle(
+                         Text(
+                          title,
+                          style: const TextStyle(
                             color: Colors.black,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -58,19 +63,19 @@ class CreateNewListWidget extends StatelessWidget {
                     // Save Button
                     ElevatedButton(
                       onPressed: () {
-                        // Save action
+                        onSaved(textContl.text);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(
+                        backgroundColor: const Color(
                             0xFF081c3d), // Dark blue color for Save button
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                             horizontal: 20.0,
                             vertical: 15.0), // Increased button width
                       ),
-                      child: Text(
+                      child: const Text(
                         'Save',
                         style: TextStyle(
                           color: Colors.white,
@@ -80,18 +85,19 @@ class CreateNewListWidget extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(
+                const SizedBox(
                     height: 20), // Spacing between title row and input field
 
                 // Input field for the list name
                 TextField(
+                  controller: textContl,
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Colors.white, // White background for input
-                    hintText: 'New list',
-                    hintStyle: TextStyle(color: Colors.grey),
+                    hintText: title,
+                    hintStyle: const TextStyle(color: Colors.grey),
                     contentPadding:
-                        EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none, // No border
