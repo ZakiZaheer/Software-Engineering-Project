@@ -22,7 +22,7 @@ class SqfLiteService {
   }
 
   Future<Database> _initDB() async {
-    final path = join(await getDatabasesPath(), 'TaskManager.db');
+    final path = join(await getDatabasesPath(), 'TaskManager1.db');
     return openDatabase(path, version: 1, onCreate: _createDB);
   }
 
@@ -79,9 +79,11 @@ class SqfLiteService {
         FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE ON UPDATE CASCADE
       )
     ''');
-    await addCategory("To-Do");
-    await addCategory("Test");
-    for(int i = 0; i<tasks.length ; i++){
+    await db.insert('category', {"name":"To-Do"});
+  }
+
+  Future<void> addTestTasks() async{
+    for(int i =0 ; i < tasks.length ; i++ ){
       await insertTask(tasks[i]);
     }
   }
@@ -92,8 +94,10 @@ class SqfLiteService {
   }
 
   Future<List<String>> getCategories()async{
+    print("Categories called");
     final db = await database;
     List<Map<String,dynamic>> map = await db.query('category');
+    print("Categories retrieved");
     return List.generate(map.length, (i){
       return map[i]['name'];
     });
@@ -139,16 +143,16 @@ class SqfLiteService {
     final db = await database;
     String curDate = DateTime.now().toString().split(" ")[0];
     String curTime = "${TimeOfDay.now().hour.toString().padLeft(2,'0')}:${TimeOfDay.now().minute.toString().padLeft(2,'0')}";
-    List<Map<String,dynamic>> map = await db.query('task' , where: 'category = ? AND status = ? AND date IS NULL OR ( date > ? OR (date = ? AND (time IS NULL OR time >= ?) ) )',whereArgs: [category , 0 , curDate , curTime]);
+    List<Map<String,dynamic>> map = await db.query('task',where: 'category = ? AND status = ? AND (date IS NULL OR (date > ? OR ( date = ? AND time >= ? ) ) )',whereArgs: [category,0 , curDate , curDate ,curTime] , orderBy: 'priority DESC , date ' );
     List<Task> tasks = List.generate(map.length, (index){
       Task task =  Task.fromMap(map[index]);
       return task;
     });
 
     for(int i = 0 ; i < tasks.length ; i++){
-      tasks[i].repeatPattern = await getTaskRepetition(tasks[i].id!);
-      tasks[i].subTasks = await getSubTasks(tasks[i].id!);
-      tasks[i].reminders = await getTaskReminders(tasks[i].id!);
+        tasks[i].repeatPattern = await getTaskRepetition(tasks[i].id!);
+        tasks[i].subTasks = await getSubTasks(tasks[i].id!);
+        tasks[i].reminders = await getTaskReminders(tasks[i].id!);
     }
 
     return tasks;
@@ -158,7 +162,7 @@ class SqfLiteService {
   Future<List<Task>> getCompletedTasks(String category)async{
     //Further Optimize
     final db = await database;
-    List<Map<String,dynamic>> map = await db.query('task' , where: 'category = ? AND status = ?',whereArgs: [category , 1]);
+    List<Map<String,dynamic>> map = await db.query('task' , where: 'category = ? AND status = ?',whereArgs: [category , 1], orderBy: 'priority DESC , date ');
     List<Task> tasks = List.generate(map.length, (index){
       Task task =  Task.fromMap(map[index]);
       return task;
@@ -178,7 +182,7 @@ class SqfLiteService {
     final db = await database;
     String curDate = DateTime.now().toString().split(" ")[0];
     String curTime = "${TimeOfDay.now().hour.toString().padLeft(2,'0')}:${TimeOfDay.now().minute.toString().padLeft(2,'0')}";
-    List<Map<String,dynamic>> map = await db.query('task' , where: 'category = ? AND status = ? AND date IS NOT NULL AND ( date < ? OR (date = ? AND time IS NOT NULL AND time < ?) )',whereArgs: [category , 0 , curDate , curTime]);
+    List<Map<String,dynamic>> map = await db.query('task' , where: 'category = ? AND status = ? AND date IS NOT NULL AND ( date < ? OR (date = ? AND time IS NOT NULL AND time < ?) )',whereArgs: [category , 0 , curDate ,curDate , curTime], orderBy: 'priority DESC , date ');
     List<Task> tasks = List.generate(map.length, (index){
       Task task =  Task.fromMap(map[index]);
       return task;
@@ -193,35 +197,54 @@ class SqfLiteService {
     return tasks;
   }
 
+  Future<void> deleteTask(Task task)async{
+    final db = await database;
+    await db.delete('task', where: 'id = ?',whereArgs: [task.id!]);
+  }
+
   Future<void> updateTaskStatus(Task task)async{
     final db = await database;
     int status = task.status == true ? 0 : 1;
 
-    await db.update('task', {'status' : status });
+    await db.update('task', {'status' : status },where: 'id = ?',whereArgs: [task.id!]);
 
     if(task.subTasks != null){
-      await db.update('sub_task', {"status" : status } , where: "task_id = ?" , whereArgs: [task.id!]);
+      await db.update('sub_tasks', {"status" : status } , where: "task_id = ?" , whereArgs: [task.id!]);
     }
 
   }
 
-  Future<void> insertSubTask(SubTask subTask)async{
+  Future<void> deleteAllCompletedTasks(String category) async{
     final db = await database;
-    await db.insert('sub_task',subTask.toMap());
+    await db.delete('task' , where: 'status = ? AND category = ?',whereArgs: [1 , category]);
   }
 
-  Future<List<SubTask>> getSubTasks(int taskId)async{
+  Future<void> insertSubTask(SubTask subTask)async{
     final db = await database;
-    List<Map<String,dynamic>> map = await db.query('sub_task',where: 'task_id = ?',whereArgs: [taskId]);
-    return List.generate(map.length, (index){
+    await db.insert('sub_tasks',subTask.toMap());
+  }
+
+  Future<List<SubTask>?> getSubTasks(int taskId)async{
+    final db = await database;
+    List<Map<String,dynamic>> map = await db.query('sub_tasks',where: 'task_id = ?',whereArgs: [taskId]);
+    List<SubTask> subTasks = List.generate(map.length, (index){
       return SubTask.fromMap(map[index]);
     });
+    return subTasks.isNotEmpty ? subTasks : null;
+  }
+
+  Future<void> deleteSubTask(int taskId)async{
+    final db = await database;
+    await db.delete('sub_tasks',where: "task_id = ?",whereArgs: [taskId]);
   }
 
   Future<void> updateSubTaskStatus(SubTask subTask)async{
     final db = await database;
     int status = subTask.status == true ? 0 : 1;
-    await db.update('sub_task',{"status" : status } , where: "task_id = ? and title = ?" , whereArgs: [subTask.taskId! , subTask.title] );
+    await db.update('sub_tasks',{"status" : status } , where: "task_id = ? and title = ?" , whereArgs: [subTask.taskId! , subTask.title] );
+    if(status == 0){
+      await db.update('task',{"status" : status } , where: "id = ?" , whereArgs: [subTask.taskId!] );
+    }
   }
 
   Future<void> insertTaskRepetition(TaskRepetition repetition)async{
@@ -229,10 +252,18 @@ class SqfLiteService {
     await db.insert('task_repetition', repetition.toMap());
   }
 
-  Future<TaskRepetition> getTaskRepetition(int taskId)async{
+  Future<TaskRepetition?> getTaskRepetition(int taskId)async{
     final db = await database;
     List<Map<String,dynamic>> map = await db.query('task_repetition',where: 'task_id = ?',whereArgs: [taskId]);
-    return TaskRepetition.fromMap(map[0]);
+    if (map.isNotEmpty){
+      return TaskRepetition.fromMap(map[0]);
+    }
+    return null;
+  }
+
+  Future<void> deleteTaskRepetation(int taskId)async{
+    final db= await database;
+    await db.delete('task_repetition',where: 'task_id = ?',whereArgs: [taskId]);
   }
 
   Future<void> insertTaskReminder(TaskReminder reminder)async{
@@ -240,12 +271,18 @@ class SqfLiteService {
     await db.insert("task_reminder", reminder.toMap());
   }
 
-  Future<List<TaskReminder>> getTaskReminders(int taskId)async{
+  Future<List<TaskReminder>?> getTaskReminders(int taskId)async{
     final db = await database;
     List<Map<String,dynamic>> map = await db.query('task_reminder',where: 'task_id = ?',whereArgs: [taskId]);
-    return List.generate(map.length, (index){
+    List<TaskReminder> reminders = List.generate(map.length, (index){
       return TaskReminder.fromMap(map[index]);
-    });
+    }) ;
+    return reminders.isNotEmpty ? reminders : null;
+  }
+
+  Future<void> deleteTaskReminders(int taskId)async{
+    final db= await database;
+    await db.delete('task_reminder',where: 'task_id = ?',whereArgs: [taskId]);
   }
 
 }
@@ -257,7 +294,7 @@ List<Task> tasks = [
     description: "Finish the remaining modules and fix bugs.",
     priority: 1,
     category: "To-Do",
-    date: "2024-10-18",
+    date: "2024-11-18",
     time: "14:00",
     status: false,
     reminders: [
@@ -276,6 +313,7 @@ List<Task> tasks = [
     title: "Morning Workout",
     priority: 3,
     category: "To-Do",
+    date: "2024-11-18",
     time: "06:00",
     status: true,
     repeatPattern: TaskRepetition(repeatInterval: 1, repeatUnit: "Day"),
@@ -292,6 +330,7 @@ List<Task> tasks = [
     description: "Daily health routine.",
     priority: 2,
     category: "To-Do",
+    date: "2024-11-18",
     time: "08:00",
     status: false,
     repeatPattern: TaskRepetition(repeatInterval: 1, repeatUnit: "Day"),
@@ -306,6 +345,7 @@ List<Task> tasks = [
     title: "Plan Vacation",
     description: "Look for flights and accommodation options.",
     priority: 2,
+    date: "2024-11-18",
     category: "To-Do",
     status: false,
     subTasks: [
@@ -322,7 +362,7 @@ List<Task> tasks = [
     description: "Discuss Q4 targets.",
     priority: 1,
     category: "To-Do",
-    date: "2024-10-20",
+    date: "2024-11-20",
     time: "09:00",
     status: false,
     reminders: [

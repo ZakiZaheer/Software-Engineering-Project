@@ -92,7 +92,7 @@ class TaskAlert extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey.shade300,
-                    padding: EdgeInsets.symmetric(
+                    padding:const EdgeInsets.symmetric(
                         horizontal: 40, vertical: 15), // Larger button
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -100,18 +100,19 @@ class TaskAlert extends StatelessWidget {
                   ),
                   child: Text(
                     button1Text,
-                    style: TextStyle(color: Colors.black, fontSize: 16),
+                    style:const TextStyle(color: Colors.black, fontSize: 16),
                   ),
                 ),
                 // Edit button
                 ElevatedButton(
-                  onPressed: () {
-                    onPressedButton2();
+                  onPressed: () async {
+                    await onPressedButton2();
+                    Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
+                    backgroundColor:const
                     Color(0xFF0A1329), // Dark blue for Edit button
-                    padding: EdgeInsets.symmetric(
+                    padding:const EdgeInsets.symmetric(
                         horizontal: 40, vertical: 15), // Larger button
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -119,7 +120,7 @@ class TaskAlert extends StatelessWidget {
                   ),
                   child: Text(
                     button2Text,
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ),
               ],
@@ -127,6 +128,6 @@ class TaskAlert extends StatelessWidget {
           ],
         ),
       ),
-    );;
+    );
   }
 }

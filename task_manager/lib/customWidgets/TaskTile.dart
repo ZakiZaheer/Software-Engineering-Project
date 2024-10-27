@@ -1,45 +1,74 @@
 import 'package:flutter/material.dart';
-
+import 'package:task_manager/model/subTask_modal.dart';
 import '../model/task_modal.dart';
 
-class TaskTile extends StatelessWidget {
+class TaskTile extends StatefulWidget {
   final Task task;
-  const TaskTile({super.key , required this.task});
+  final Function(Task) onTap;
+  final Function(Task) onChecked;
+  final Function(SubTask) onSubTaskChecked;
+  const TaskTile({super.key , required this.task , required this.onTap,required this.onChecked , required this.onSubTaskChecked});
 
+  @override
+  State<TaskTile> createState() => _TaskTileState();
+}
+
+class _TaskTileState extends State<TaskTile> {
+  TextDecoration decoration = TextDecoration.none;
+  Widget checkBox = const Placeholder();
+  bool isExpanded = false;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if(widget.task.status == true){
+      setState(() {
+        decoration = TextDecoration.lineThrough;
+        checkBox = IconButton(onPressed: ()async{await widget.onChecked(widget.task);}, icon:const Icon(Icons.check , color: Colors.white,));
+      });
+    }
+    else{
+      setState(() {
+        checkBox = Theme(
+          data: ThemeData(
+            unselectedWidgetColor: Colors.white, // White outline
+          ),
+          child: Checkbox(
+            value: widget.task.status,
+            onChanged: (val)async  {
+              await widget.onChecked(widget.task);
+            },
+            activeColor: Colors.white,
+            checkColor: Colors.black,
+            side: const BorderSide(
+              color:  Colors.white, // Outline color
+              width: 2.0, // Outline width
+            ),
+          ),
+        );
+      });
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.white.withOpacity(0.3), Colors.transparent],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
+      onTap: (){widget.onTap(widget.task);},
+      child:  Column(
           children: [
+            Container(
+                margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.white.withOpacity(0.3), Colors.transparent],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child:
             Row(
               children: [
-                Theme(
-                  data: ThemeData(
-                    unselectedWidgetColor: Colors.white, // White outline
-                  ),
-                  child: Checkbox(
-                    value: task.status,
-                    onChanged: (val) {
-                      // onChecked(widget.task);
-                    },
-                    activeColor: Colors.white,
-                    checkColor: Colors.black,
-                    side: BorderSide(
-                      color: Colors.white, // Outline color
-                      width: 2.0, // Outline width
-                    ),
-                  ),
-                ),
+                checkBox,
                 const SizedBox(width: 10),
                 Expanded(
                     child: Column(
@@ -47,66 +76,152 @@ class TaskTile extends StatelessWidget {
                         Row(
                           children: [
                             Text(
-                              task.title,
-                              style: const TextStyle(
+                              widget.task.title,
+                              style: TextStyle(
+                                decorationColor: Colors.white,
+                                decorationThickness: 1.5,
                                 fontSize: 16,
-                                color: Colors.white, // Use black text to contrast
+                                color: Colors.white,
+                                decoration: decoration
+                                // Use black text to contrast
                               ),
+
                             ),
                           ],
                         ),
-                        if (task.date != null)
+                        if (widget.task.date != null)
                           Row(
                             children: [
+                              const Icon(Icons.timer),
                               Text(
-                                task.date!,
+                                " ${widget.task.date!} ",
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color:
                                   Colors.white, // Use black text to contrast
                                 ),
                               ),
-                              if (task.time != null)
+                              if (widget.task.time != null)
                                 Text(
-                                  task.time!,
+                                  "${widget.task.time!} ",
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: Colors
                                         .white, // Use black text to contrast
                                   ),
                                 ),
-                              if (task.repeatPattern != null)
-                                Text(
-                                  task.repeatPattern.toString(),
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors
-                                        .white, // Use black text to contrast
+                              if (widget.task.repeatPattern != null)
+                                ...[
+                                  const Icon(Icons.repeat),
+                                  Text(
+                                    " ${widget.task.repeatPattern!.repeatInterval} ${widget.task.repeatPattern!.repeatUnit}",
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors
+                                          .white, // Use black text to contrast
+                                    ),
                                   ),
-                                ),
+                                ]
+
                             ],
                           ),
                       ],
                     )
                 ),
-                if (task.subTasks != null)
+                if (widget.task.subTasks != null)
                   IconButton(
-                      onPressed: () {
-                        // setState(() {
-                        //   _toggleExpansion();
-                        // });
-                      },
-                      icon: const Icon(Icons.expand_more)),
-                const Center(
+                    onPressed: () {
+                      setState(() {
+                        isExpanded = !isExpanded;
+                      });
+                    },
+                    icon: Icon(isExpanded ? Icons.expand_less : Icons.expand_more),
+                  ),
+                 Center(
                     child: CircleAvatar(
-                      backgroundColor: Colors.white ,
+                      backgroundColor: _selectTaskColor(widget.task) ,
                       radius: 10,)
                 ),
               ],
             )
+            ,),
+            if(isExpanded)
+              ...List.generate(widget.task.subTasks!.length, (index){
+                return SubTaskTile(
+                    subTask: widget.task.subTasks![index],
+                  onChecked: (subTask){
+                    widget.onSubTaskChecked(subTask);
+                    setState(() {
+
+                    });
+                  },
+                );
+              })
           ],
+        ),
+      );
+  }
+}
+
+class SubTaskTile extends StatelessWidget {
+  final SubTask subTask;
+  final Function(SubTask) onChecked;
+  const SubTaskTile({super.key , required this.subTask , required this.onChecked});
+
+  @override
+  Widget build(BuildContext context) {
+    TextDecoration decoration = TextDecoration.none;
+    Widget checkBox =
+    Theme(
+      data: ThemeData(
+        unselectedWidgetColor: Colors.white, // White outline
+      ),
+      child: Checkbox(
+        value: subTask.status,
+        onChanged: (val) async {
+          await onChecked(subTask);
+        },
+        activeColor: Colors.white,
+        checkColor: Colors.black,
+        side: const BorderSide(
+          color:  Colors.white, // Outline color
+          width: 2.0, // Outline width
         ),
       ),
     );
+
+    if(subTask.status == true){
+      decoration = TextDecoration.lineThrough;
+      checkBox = IconButton(onPressed: ()async{await onChecked(subTask);}, icon:const Icon(Icons.check , color: Colors.white,));
+    }
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(50, 0, 0, 0),
+
+      child: Row(
+        children: [
+      checkBox,
+    const SizedBox(width: 10),
+    Text(subTask.title,
+        style: TextStyle(
+          decoration: decoration,
+        decorationColor: Colors.white,
+        fontSize: 16,
+        color: Colors
+            .white, // Use black text to contrast
+      )),
+        ]
+    )
+    );
   }
 }
+
+_selectTaskColor(Task task){
+  if(task.priority == 3){
+    return Colors.red;
+  }
+  else if(task.priority == 2){
+    return Colors.yellow;
+  }
+  return Colors.green;
+}
+
