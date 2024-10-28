@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'customWidgets/date_picker.dart';
-import 'customWidgets/time_picker.dart';
-import 'customWidgets/alert_slider.dart';
-import 'screens/task_screens/task_repeat_screen.dart';
-import 'screens/task_screens/task_reminders_screen.dart';
-import 'screens/task_screens/task_stop_repeat_screen.dart';
-import 'CustomFont.dart';
+import 'package:task_manager/customWidgets/date_picker.dart';
+import 'package:task_manager/customWidgets/time_picker.dart';
+import 'package:task_manager/customWidgets/alert_slider.dart';
+import 'package:task_manager/screens/task_screens/task_repeat_screen.dart';
+import 'package:task_manager/screens/task_screens/task_reminders_screen.dart';
+import 'package:task_manager/screens/task_screens/task_stop_repeat_screen.dart';
+import 'package:task_manager/Custom_Fonts.dart';
 
 class TimeScreen extends StatelessWidget {
   @override

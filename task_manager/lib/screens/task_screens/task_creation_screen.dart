@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'screens/task_screens/task_time_set_screen.dart';
-import 'Custom_Fonts.dart';
-import 'customWidgets/alert_slider.dart';
-import 'customWidgets/NewList.dart';
+import 'package:task_manager/screens/task_screens/task_time_set_screen.dart';
+import 'package:task_manager/Custom_Fonts.dart';
+import 'package:task_manager/customWidgets/alert_slider.dart';
+import 'package:task_manager/customWidgets/NewList.dart';
 
 class CreateTask extends StatelessWidget {
   final List<String> categories;

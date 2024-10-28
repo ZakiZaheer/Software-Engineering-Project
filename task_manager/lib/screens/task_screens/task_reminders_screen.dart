@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'customWidgets/custom_picker.dart';
-import 'CustomFont.dart';
+import 'package:task_manager/customWidgets/custom_picker.dart';
+import 'package:task_manager/Custom_Fonts.dart';
 
 class RemindersScreen extends StatefulWidget {
   final Function(List<String>) onSave; // Callback to pass selected options

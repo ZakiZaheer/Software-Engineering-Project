@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'CustomFont.dart';
-import 'customWidgets/counter.dart';
+import 'package:task_manager/Custom_Fonts.dart';
+import 'package:task_manager/customWidgets/counter.dart';
 
 class StopRepeatScreen extends StatefulWidget {
   final Function(String, [int?]) onOptionSelected; 
