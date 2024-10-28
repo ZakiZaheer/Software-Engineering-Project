@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:intl/intl.dart';
 import '../model/task_modal.dart';
 
 class TaskDescription extends StatelessWidget {
@@ -70,29 +70,33 @@ class TaskDescription extends StatelessWidget {
                         children: [
                           const Icon(Icons.timer),
                           Text(
-                            " ${task.date!} ",
+                            " ${_formatDate(task.date!)}, ",
                             style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.black54,
+                              fontSize: 12,
+                              color:
+                              Colors.white, // Use black text to contrast
                             ),
                           ),
                           if (task.time != null)
                             Text(
-                              "${task.time!} ",
+                              "${_formatTime(task.time!)} ",
                               style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black54,
+                                fontSize: 12,
+                                color: Colors
+                                    .white, // Use black text to contrast
                               ),
                             ),
-                          if (task.repeatPattern != null) ...[
-                            const Icon(Icons.repeat),
-                            Text(
-                              " ${task.repeatPattern!.repeatInterval} ${task.repeatPattern!.repeatUnit}",
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black54,
+                          if (task.repeatPattern != null)
+                            ...[
+                              const Icon(Icons.repeat),
+                              Text(
+                                " Every ${task.repeatPattern!.repeatInterval} ${task.repeatPattern!.repeatUnit}",
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors
+                                      .white, // Use black text to contrast
+                                ),
                               ),
-                            ),
                           ]
                         ],
                       ),
@@ -164,4 +168,25 @@ class TaskDescription extends StatelessWidget {
       ),
     );
   }
+}
+
+
+String _formatTime(String timeString) {
+  final DateFormat inputFormat = DateFormat('HH:mm');
+  final DateFormat outputFormat = DateFormat('hh:mm a');
+
+  DateTime time = inputFormat.parse(timeString);
+  String formattedTime = outputFormat.format(time);
+
+  return 'At $formattedTime';
+}
+
+String _formatDate(String dateString) {
+  final DateFormat inputFormat = DateFormat('dd-MM-yyyy');
+  final DateFormat outputFormat = DateFormat('dd MMM');
+
+  DateTime dateTime = inputFormat.parse(dateString);
+  String formattedDate = outputFormat.format(dateTime);
+
+  return 'On $formattedDate';
 }

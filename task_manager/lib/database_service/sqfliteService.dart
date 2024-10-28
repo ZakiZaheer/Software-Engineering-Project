@@ -94,10 +94,8 @@ class SqfLiteService {
   }
 
   Future<List<String>> getCategories()async{
-    print("Categories called");
     final db = await database;
     List<Map<String,dynamic>> map = await db.query('category');
-    print("Categories retrieved");
     return List.generate(map.length, (i){
       return map[i]['name'];
     });
@@ -217,6 +215,13 @@ class SqfLiteService {
   Future<void> deleteAllCompletedTasks(String category) async{
     final db = await database;
     await db.delete('task' , where: 'status = ? AND category = ?',whereArgs: [1 , category]);
+  }
+
+  Future<void> deleteAllUnfinishedTasks(String category) async{
+    final db = await database;
+    String curDate = DateTime.now().toString().split(" ")[0];
+    String curTime = "${TimeOfDay.now().hour.toString().padLeft(2,'0')}:${TimeOfDay.now().minute.toString().padLeft(2,'0')}";
+    await db.delete('task' , where: 'category = ? AND status = ? AND date IS NOT NULL AND ( date < ? OR (date = ? AND time IS NOT NULL AND time < ?) )',whereArgs: [category , 0 , curDate ,curDate , curTime]);
   }
 
   Future<void> insertSubTask(SubTask subTask)async{

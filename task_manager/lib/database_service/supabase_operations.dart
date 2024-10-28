@@ -2,7 +2,7 @@
 import 'package:task_manager/database_service/supabase_client.dart';
 
 class DatabseService {
-  static final _client = SupabaseService.client;
+  static final _client = SupaBaseService.client;
 
   static Future<void> addTask({required String title,
                                 String? description, 
