@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'screens/task_screens/task_creation_screen.dart';
 import 'customWidgets/NewList.dart';
 import 'customWidgets/Taskdiscription.dart'; // Import your custom task description dialog
-
 void main() {
   runApp(MyApp());
 }
@@ -12,6 +11,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: ToDoList(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -49,7 +49,7 @@ class _ToDoListState extends State<ToDoList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF1A1E26),
+      backgroundColor: Color(0xFF0A1A2A),
       appBar: AppBar(
         title: Text('$listName', style: TextStyle(color: Colors.white)),
         backgroundColor: Color(0xFF0A1329),
@@ -187,7 +187,11 @@ class _ToDoListState extends State<ToDoList> {
         backgroundColor: Color(0xFFFBBD3B),
         onPressed: () {
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => CreateTask()));
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreateTask(categories: categories),
+            ),
+          );
         },
         child: Icon(Icons.add, color: Colors.black),
       ),
