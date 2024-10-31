@@ -3,12 +3,14 @@ class TaskRepetition{
   int repeatInterval;
   String repeatUnit;
   String? repeatUntil;
+  String repeatUntilType;
   int? numOccurrence;
 
   TaskRepetition({
     required this.repeatInterval,
     required this.repeatUnit,
-    this.repeatUntil,
+    this.repeatUntil = "Never",
+    this.repeatUntilType = "Never",
     this.numOccurrence,
     this.taskId,
   });

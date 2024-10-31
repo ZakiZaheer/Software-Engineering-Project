@@ -66,6 +66,13 @@ class _TaskScreenState extends State<TaskScreen> {
         actions: [
           _popUpButton(),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(2),
+          child: Container(
+            color: Colors.white.withOpacity(0.6),
+            height: 2,
+          ),
+        ),
       ),
       body: ListView(
         children: [
@@ -146,10 +153,11 @@ class _TaskScreenState extends State<TaskScreen> {
       ),
     floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFFBBD3B),
-        onPressed: () async {
-          await _scheduleTask();
-          // Navigator.push(
-          //     context, MaterialPageRoute(builder: (context) => Scaffold()));
+        onPressed: () {
+          Navigator.pushNamed(context, '/taskCreationScreen').then((data) async {
+            _currentCategory = data as String;
+            await loadTasks();
+          });
         },
         child: const Icon(Icons.add, color: Colors.black),
       ),

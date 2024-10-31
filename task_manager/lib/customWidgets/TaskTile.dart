@@ -241,9 +241,9 @@ class SubTaskTile extends StatelessWidget {
 }
 
 _selectTaskColor(Task task) {
-  if (task.priority == 3) {
+  if (task.priority == 1) {
     return Colors.red;
-  } else if (task.priority == 2) {
+  } else if (task.priority == 0) {
     return Colors.yellow;
   }
   return Colors.green;
