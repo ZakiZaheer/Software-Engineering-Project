@@ -53,7 +53,7 @@ class _TaskTileState extends State<TaskTile> {
             value: widget.task.status,
             onChanged: (val) async {
               await widget.onChecked(widget.task);
-              await NotificationService.cancelTaskReminders(widget.task);
+              // await NotificationService.cancelTaskReminders(widget.task);
             },
             activeColor: Colors.white,
             checkColor: Colors.black,
@@ -91,6 +91,7 @@ class _TaskTileState extends State<TaskTile> {
                 const SizedBox(width: 10),
                 Expanded(
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
@@ -108,7 +109,7 @@ class _TaskTileState extends State<TaskTile> {
                       ],
                     ),
                     if (widget.task.date != null)
-                      Row(
+                      Wrap(
                         children: [
                           const Icon(Icons.timer),
                           Text(
@@ -127,17 +128,19 @@ class _TaskTileState extends State<TaskTile> {
                                     Colors.white, // Use black text to contrast
                               ),
                             ),
-                          if (widget.task.repeatPattern != null) ...[
-                            const Icon(Icons.repeat),
-                            Text(
-                              " Every ${widget.task.repeatPattern!.repeatInterval} ${widget.task.repeatPattern!.repeatUnit}",
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color:
-                                    Colors.white, // Use black text to contrast
+                          if (widget.task.repeatPattern != null) Wrap(
+                            children: [
+                              const Icon(Icons.repeat),
+                              Text(
+                                " Every ${widget.task.repeatPattern!.repeatInterval} ${widget.task.repeatPattern!.repeatUnit}",
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color:
+                                  Colors.white, // Use black text to contrast
+                                ),
                               ),
-                            ),
-                          ]
+                            ],
+                          )
                         ],
                       ),
                   ],
@@ -160,11 +163,14 @@ class _TaskTileState extends State<TaskTile> {
               ],
             ),
           ),
-          if (isExpanded) ...[
+          if (isExpanded)
+            if(widget.task.subTasks!=null)
+            ...[
             const Divider(
               color: Colors.white,
               indent: 15,
             ),
+
             ...List.generate(widget.task.subTasks!.length, (index) {
               return SubTaskTile(
                 subTask: widget.task.subTasks![index],
@@ -260,7 +266,7 @@ String _formatTime(String timeString) {
 }
 
 String _formatDate(String dateString) {
-  final DateFormat inputFormat = DateFormat('dd-MM-yyyy');
+  final DateFormat inputFormat = DateFormat('yyyy-MM-dd');
   final DateFormat outputFormat = DateFormat('dd MMM');
 
   DateTime dateTime = inputFormat.parse(dateString);

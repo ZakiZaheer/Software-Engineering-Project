@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:task_manager/customWidgets/DropDownField.dart';
 import 'package:task_manager/customWidgets/ErrorDialog.dart';
 import 'package:task_manager/customWidgets/SubTaskInputField.dart';
 import 'package:task_manager/customWidgets/inputField.dart';
 import 'package:task_manager/database_service/sqfliteService.dart';
 import 'package:task_manager/model/subTask_modal.dart';
-import 'package:task_manager/screens/task_screens/task_time_set_screen.dart';
 import 'package:task_manager/Custom_Fonts.dart';
 import 'package:task_manager/customWidgets/alert_slider.dart';
-import 'package:task_manager/customWidgets/NewList.dart';
 
 import '../../model/task_modal.dart';
 
@@ -35,34 +34,36 @@ class _TaskCreationScreenState extends State<TaskCreationScreen> {
     setState(() {});
   }
 
-  Future<void> addTask()async{
-    print("Task to be created:\n $task");
-    if(_titleController.text.isNotEmpty){
-      print("title: ${_titleController.text}");
+  Future<void> addTask() async {
+    if (_titleController.text.isNotEmpty) {
       task.title = _titleController.text;
-      if(_descriptionController.text.isNotEmpty){
+      if (_descriptionController.text.isNotEmpty) {
         task.description = _descriptionController.text;
       }
       task.category = _selectedCategory ?? "To-Do";
       task.priority = _selectedPriority;
-      if(subTasksControllers.isNotEmpty){
-        if(_checkDuplicatedSubTasks(subTasksControllers)){
-          showDialog(context: context, builder: (BuildContext context){
-            return const ErrorDialog(title: "Duplicate Subtask not allowed!");
-          });
+      if (subTasksControllers.isNotEmpty) {
+        if (_checkDuplicatedSubTasks(subTasksControllers)) {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return const ErrorDialog(
+                    title: "Duplicate Subtask not allowed!");
+              });
           return;
         }
-        task.subTasks = List.generate(subTasksControllers.length, (index){
+        task.subTasks = List.generate(subTasksControllers.length, (index) {
           return SubTask(title: subTasksControllers[index].text);
         });
       }
       await db.insertTask(task);
-      Navigator.pop(context,_selectedCategory ?? "To-Do");
-    }
-    else{
-      showDialog(context: context, builder: (BuildContext context){
-        return const ErrorDialog(title: "Empty Task Title NOt Allowed!");
-      });
+      Navigator.pop(context, _selectedCategory ?? "To-Do");
+    } else {
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return const ErrorDialog(title: "Empty Task Title NOt Allowed!");
+          });
     }
   }
 
@@ -123,9 +124,8 @@ class _TaskCreationScreenState extends State<TaskCreationScreen> {
               _selectedCategory = value;
             },
             onAddItem: (newCategory) async {
-                await db.addCategory(newCategory);
-                await loadCategories();
-
+              await db.addCategory(newCategory);
+              await loadCategories();
             },
           ),
           const SizedBox(height: 16),
@@ -147,26 +147,37 @@ class _TaskCreationScreenState extends State<TaskCreationScreen> {
                     fontWeight: FontWeight.w400,
                     fontSize: 18,
                     color: Colors.white)),
-            trailing: const Text(
-              'None',
-              style: TextStyle(
-                  fontFamily: 'Roboto',
-                  fontWeight: FontWeight.w300,
-                  fontSize: 13,
-                  color: Colors.grey),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "${task.date != null ? formatDate(task.date!) : "None"}${task.time != null ? " , ${formatTime(task.time!)}" : ""} ",
+                  style: const TextStyle(
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w300,
+                      fontSize: 13,
+                      color: Colors.grey),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios_outlined,
+                ),
+              ],
             ),
             onTap: () {
-              Navigator.pushNamed(context, '/taskDateTimeSelectionScreen' , arguments: task).then(
-                  (data){
-                    if(data != null){
-                      Task newTask = data as Task;
-                      task.date = newTask.date;
-                      task.time = newTask.time;
-                      task.repeatPattern = newTask.repeatPattern;
-                      task.reminders = newTask.reminders;
-                    }
-                  }
-              );
+              Navigator.pushNamed(context, '/taskDateTimeSelectionScreen',
+                      arguments: task)
+                  .then((data) {
+                if (data != null) {
+
+                  Task newTask = data as Task;
+                  print("Recieved Task: $newTask");
+                  task.date = newTask.date;
+                  task.time = newTask.time;
+                  task.repeatPattern = newTask.repeatPattern;
+                  task.reminders = newTask.reminders;
+                  setState(() {});
+                }
+              });
               // Navigator.push(context, MaterialPageRoute(builder: (context)=> SetDateTimeScreen()));
             },
           ),
@@ -209,13 +220,23 @@ class _TaskCreationScreenState extends State<TaskCreationScreen> {
   }
 }
 
-
-bool _checkDuplicatedSubTasks(List<TextEditingController> subtasks){
+bool _checkDuplicatedSubTasks(List<TextEditingController> subtasks) {
   Set<String> seen = <String>{};
-  for(TextEditingController subTask in subtasks){
-    if(!seen.add(subTask.text)){
+  for (TextEditingController subTask in subtasks) {
+    if (!seen.add(subTask.text)) {
       return true;
     }
   }
   return false;
+}
+
+
+String formatDate(String dateInput) {
+  DateTime parsedDate = DateFormat('yyyy-MM-dd').parse(dateInput);
+  return DateFormat('d MMM').format(parsedDate);
+}
+
+String formatTime(String timeInput) {
+  DateTime parsedTime = DateFormat('HH:mm').parse(timeInput);
+  return DateFormat('h:mm a').format(parsedTime);
 }

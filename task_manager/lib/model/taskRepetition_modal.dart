@@ -3,14 +3,14 @@ class TaskRepetition{
   int repeatInterval;
   String repeatUnit;
   String? repeatUntil;
-  String repeatUntilType;
+  String repeatType;
   int? numOccurrence;
 
   TaskRepetition({
     required this.repeatInterval,
     required this.repeatUnit,
-    this.repeatUntil = "Never",
-    this.repeatUntilType = "Never",
+    this.repeatUntil,
+    this.repeatType = "Never",
     this.numOccurrence,
     this.taskId,
   });
@@ -20,6 +20,7 @@ class TaskRepetition{
       "task_id":taskId,
       "repeat_interval":repeatInterval,
       "repeat_unit":repeatUnit,
+      "repeat_type": repeatType,
       "repeat_until":repeatUntil,
       "num_occurrence":numOccurrence,
     };
@@ -30,6 +31,7 @@ class TaskRepetition{
       taskId: map["task_id"],
       repeatInterval: map["repeat_interval"],
       repeatUnit: map["repeat_unit"],
+      repeatType:map['repeat_type'],
       repeatUntil: map["repeat_until"],
       numOccurrence: map["num_occurrence"],
     );

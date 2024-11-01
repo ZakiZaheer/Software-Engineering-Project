@@ -22,8 +22,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
   void initializeDate() {
     DateTime currentDate;
     if (widget.initialDate != null) {
-      final parts = widget.initialDate!.split('-');
-      currentDate = DateTime(int.parse(parts[2]),int.parse(parts[1]),int.parse(parts[0]));
+      currentDate = DateTime.parse(widget.initialDate!);
     } else {
       currentDate = DateTime.now();
     }
@@ -217,7 +216,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                 onPressed: () {
                   final selecteedDate = DateTime(selectedYear,selectedMonth,selectedDay);
                   Navigator.of(context)
-                      .pop(DateFormat('dd-MM-yyyy').format(selecteedDate)); // Return selected date
+                      .pop(DateFormat('yyyy-MM-dd').format(selecteedDate)); // Return selected date
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF081c3d),

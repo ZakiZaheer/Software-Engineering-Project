@@ -16,11 +16,11 @@ class TaskRepeatScreen extends StatefulWidget {
 
 class _TaskRepeatScreenState extends State<TaskRepeatScreen> {
   List<String> options = [
-    "1 hour",
-    "1 day",
-    "1 week",
-    "1 month",
-    "1 year",
+    "1 Hour",
+    "1 Day",
+    "1 Week",
+    "1 Month",
+    "1 Year",
   ];
   String? selectedOption;
 
@@ -121,8 +121,10 @@ class _TaskRepeatScreenState extends State<TaskRepeatScreen> {
                   title: 'Custom Repeat',
                   onConfirm: (interval, unit) {
                     setState(() {
-                      options.add("$interval $unit");
-                      selectedOption = options.last;
+                      if(!options.contains("$interval $unit")){
+                        options.add("$interval $unit");
+                      }
+                      selectedOption = "$interval $unit";
                     });
                   },
                 );

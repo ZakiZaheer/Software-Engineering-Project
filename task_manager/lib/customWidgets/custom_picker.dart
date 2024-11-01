@@ -5,6 +5,7 @@ void showCustomRepeatPicker(
   BuildContext context, {
   required String title,
   required void Function(int number, String unit) onConfirm,
+      bool forReminder = false,
 }) {
   showModalBottomSheet(
     context: context,
@@ -16,16 +17,18 @@ void showCustomRepeatPicker(
       return CustomRepeatPicker(
         title: title,
         onConfirm: onConfirm,
+        forReminder: forReminder,
       );
     },
   );
 }
 
 class CustomRepeatPicker extends StatefulWidget {
+  final bool? forReminder;
   final String title;
   final void Function(int number, String unit) onConfirm;
 
-  CustomRepeatPicker({required this.title, required this.onConfirm});
+  CustomRepeatPicker({required this.title, required this.onConfirm , this.forReminder});
 
   @override
   _CustomRepeatPickerState createState() => _CustomRepeatPickerState();
@@ -33,10 +36,22 @@ class CustomRepeatPicker extends StatefulWidget {
 
 class _CustomRepeatPickerState extends State<CustomRepeatPicker> {
   int selectedNumber = 1;
-  String selectedUnit = 'minute';
+  String selectedUnit = 'Hour';
 
   List<int> numbers = List<int>.generate(99, (i) => i + 1);
-  List<String> units = ['minute', 'hour', 'day'];
+  List<String> units = ['Hour', 'Day', 'Week','Month','Year'];
+
+  @override
+  void initState() {
+    if(widget.forReminder != null && widget.forReminder==true){
+      units.insert(0, "Minute");
+      selectedUnit = "Minute";
+      setState(() {
+
+      });
+    }
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +78,7 @@ class _CustomRepeatPickerState extends State<CustomRepeatPicker> {
           ),
           SizedBox(height: 4),
           Text(
-            'Every $selectedNumber $selectedUnit(s)',
+            widget.forReminder ==true ?'$selectedNumber $selectedUnit Before The Task ' :'Every $selectedNumber $selectedUnit(s)',
             style: TextStyle(
               color: Colors.black,
               fontSize: 14,

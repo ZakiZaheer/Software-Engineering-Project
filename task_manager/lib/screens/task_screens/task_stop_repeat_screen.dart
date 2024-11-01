@@ -30,11 +30,11 @@ class _TaskRepeatUntilScreenState extends State<TaskRepeatUntilScreen> {
   @override
   void initState() {
     if(widget.repeatPattern != null){
-      if(widget.repeatPattern!.repeatUntilType == "Time"){
+      if(widget.repeatPattern!.repeatType == "Time"){
         selectedOption = "Time";
         date = widget.repeatPattern!.repeatUntil!;
       }
-      else if(widget.repeatPattern!.repeatUntilType == "Count"){
+      else if(widget.repeatPattern!.repeatType == "Count"){
         selectedOption = "Count";
         countValue = widget.repeatPattern!.numOccurrence!;
       }

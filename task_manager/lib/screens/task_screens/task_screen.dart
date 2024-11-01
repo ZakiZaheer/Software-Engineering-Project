@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:task_manager/customWidgets/TaskAlert.dart';
 import 'package:task_manager/customWidgets/TaskTile.dart';
 import 'package:task_manager/customWidgets/Taskdiscription.dart';
 import 'package:task_manager/customWidgets/taskExpansionTile.dart';
 import 'package:task_manager/notification_service/notification_service.dart';
-import 'package:task_manager/screens/task_screens/task_creation_screen.dart';
 import 'package:task_manager/customWidgets/NewList.dart';
 import '../../database_service/sqfliteService.dart';
 import '../../model/subTask_modal.dart';
@@ -20,7 +18,6 @@ class TaskScreen extends StatefulWidget {
 }
 
 class _TaskScreenState extends State<TaskScreen> {
-
   SqfLiteService db = SqfLiteService();
   String _currentCategory = "To-Do";
   List<String> categories = [];
@@ -30,16 +27,11 @@ class _TaskScreenState extends State<TaskScreen> {
 
   Future<void> loadTasks() async {
     categories = await db.getCategories();
-    // await db.addTestTasks();
-    tasks = await db.getTasks(_currentCategory);
-    // print(tasks);
-    completedTasks = await db.getCompletedTasks(_currentCategory);
     unfinishedTasks = await db.getUnfinishedTasks(_currentCategory);
+    tasks = await db.getTasks(_currentCategory);
+    completedTasks = await db.getCompletedTasks(_currentCategory);
     setState(() {});
   }
-
-
-
 
   @override
   void initState() {
@@ -79,17 +71,22 @@ class _TaskScreenState extends State<TaskScreen> {
           ...List.generate(tasks.length, (index) {
             return TaskTile(
               task: tasks[index],
-              onTap: (task) {
-                showDialog(
+              onTap: (task) async {
+                final category = await showDialog(
                     context: context,
                     builder: (BuildContext context) {
                       return TaskDescription(
-                          task: task,
-                          onDelete: (task) async {
-                            await db.deleteTask(task);
-                            await loadTasks();
-                          });
+                        task: task,
+                        onDelete: (task) async {
+                          await db.deleteTask(task);
+                          await loadTasks();
+                        },
+                      );
                     });
+                if (category != null) {
+                  _currentCategory = category as String;
+                  await loadTasks();
+                }
               },
               onChecked: (task) async {
                 await db.updateTaskStatus(task);
@@ -104,17 +101,22 @@ class _TaskScreenState extends State<TaskScreen> {
           TaskExpansionTile(
             title: "Completed",
             tasks: completedTasks,
-            onTap: (task) {
-              showDialog(
+            onTap: (task) async {
+              final category = await showDialog(
                   context: context,
                   builder: (BuildContext context) {
                     return TaskDescription(
-                        task: task,
-                        onDelete: (task) async {
-                          await db.deleteTask(task);
-                          await loadTasks();
-                        });
+                      task: task,
+                      onDelete: (task) async {
+                        await db.deleteTask(task);
+                        await loadTasks();
+                      },
+                    );
                   });
+              if (category != null) {
+                _currentCategory = category as String;
+                await loadTasks();
+              }
             },
             onChecked: (task) async {
               await db.updateTaskStatus(task);
@@ -128,17 +130,22 @@ class _TaskScreenState extends State<TaskScreen> {
           TaskExpansionTile(
             title: "Unfinished",
             tasks: unfinishedTasks,
-            onTap: (task) {
-              showDialog(
+            onTap: (task) async {
+              final category = await showDialog(
                   context: context,
                   builder: (BuildContext context) {
                     return TaskDescription(
-                        task: task,
-                        onDelete: (task) async {
-                          await db.deleteTask(task);
-                          await loadTasks();
-                        });
+                      task: task,
+                      onDelete: (task) async {
+                        await db.deleteTask(task);
+                        await loadTasks();
+                      },
+                    );
                   });
+              if (category != null) {
+                _currentCategory = category as String;
+                await loadTasks();
+              }
             },
             onChecked: (task) async {
               await db.updateTaskStatus(task);
@@ -151,13 +158,15 @@ class _TaskScreenState extends State<TaskScreen> {
           )
         ],
       ),
-    floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFFBBD3B),
         onPressed: () {
-          Navigator.pushNamed(context, '/taskCreationScreen').then((data) async {
-            _currentCategory = data as String;
-            await loadTasks();
-          });
+          // Navigator.pushNamed(context, '/taskCreationScreen')
+          //     .then((data) async {
+          //   _currentCategory = data as String;
+          //   await loadTasks();
+          // });
+          NotificationService.instantNotification("Testing I am", "HAhahaha");
         },
         child: const Icon(Icons.add, color: Colors.black),
       ),
@@ -368,7 +377,8 @@ class _TaskScreenState extends State<TaskScreen> {
       },
     );
   }
-  _scheduleTask()  async {
+
+  _scheduleTask() async {
     Task task = Task(
       id: 1,
       title: "Complete Flutter Project",
@@ -392,5 +402,3 @@ class _TaskScreenState extends State<TaskScreen> {
     await NotificationService.scheduleTaskReminder(task);
   }
 }
-
-

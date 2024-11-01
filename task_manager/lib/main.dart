@@ -3,6 +3,7 @@ import 'package:task_manager/model/taskReminder_modal.dart';
 import 'package:task_manager/model/taskRepetition_modal.dart';
 import 'package:task_manager/notification_service/notification_service.dart';
 import 'package:task_manager/screens/task_screens/task_creation_screen.dart';
+import 'package:task_manager/screens/task_screens/task_modification_screen.dart';
 import 'package:task_manager/screens/task_screens/task_reminders_screen.dart';
 import 'package:task_manager/screens/task_screens/task_repeat_screen.dart';
 import 'package:task_manager/screens/task_screens/task_screen.dart';
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
         '/taskRepeatScreen' : (context) => TaskRepeatScreen(repeatPattern: ModalRoute.of(context)!.settings.arguments as TaskRepetition?,),
         '/taskRepeatUntilScreen' : (context) => TaskRepeatUntilScreen(repeatPattern: ModalRoute.of(context)!.settings.arguments as TaskRepetition?,),
         '/taskRemindersScreen' : (context) => TaskRemindersScreen(reminders: ModalRoute.of(context)!.settings.arguments as List<TaskReminder>?,),
+        '/taskModificationScreen' : (context) => TaskModificationScreen(task: ModalRoute.of(context)!.settings.arguments as Task),
       },
       // home: Scaffold(
       //   body: Center(

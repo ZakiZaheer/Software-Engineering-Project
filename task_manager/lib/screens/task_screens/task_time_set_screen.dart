@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:task_manager/customWidgets/ErrorDialog.dart';
 import 'package:task_manager/customWidgets/SelectionField.dart';
 import 'package:task_manager/customWidgets/date_picker.dart';
 import 'package:task_manager/customWidgets/time_picker.dart';
 import 'package:task_manager/customWidgets/alert_slider.dart';
+import 'package:task_manager/model/taskReminder_modal.dart';
 import 'package:task_manager/model/taskRepetition_modal.dart';
 import 'package:task_manager/Custom_Fonts.dart';
 import '../../model/task_modal.dart';
@@ -61,7 +64,7 @@ class _TaskDateTimeSelectionScreenState
           children: [
             SelectionField(
               title: "Date",
-              initialValue: widget.task.date ?? "none",
+              initialValue:widget.task.date != null ? formatDate(widget.task.date!)  : "none",
               onTap: () async {
                 String? pickedDate = await showModalBottomSheet<String>(
                   context: context,
@@ -71,16 +74,31 @@ class _TaskDateTimeSelectionScreenState
                 );
 
                 if (pickedDate != null) {
+                  final pickedDateTime = DateTime.parse(pickedDate.toString());
+                  DateTime today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+
+                  if (pickedDateTime.isBefore(today)) {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return const ErrorDialog(title: "Invalid Date Selected!");
+                      },
+                    );
+                    return null;
+                  }
+
                   setState(() {
                     widget.task.date = pickedDate.toString();
                   });
+                  return formatDate(pickedDate);
                 }
                 return pickedDate;
+
               },
             ),
             SelectionField(
                 title: "Time",
-                initialValue: widget.task.time ?? "none",
+                initialValue: widget.task.time != null ? formatTime(widget.task.time!) : "none",
                 onTap: widget.task.date != null
                     ? () async {
                         String? pickedTime = await showModalBottomSheet<String>(
@@ -91,9 +109,32 @@ class _TaskDateTimeSelectionScreenState
                         );
 
                         if (pickedTime != null) {
+                          final DateTime datePart = DateTime.parse(widget.task.date!);
+                          final splitTime = pickedTime.split(":");
+                          final DateTime pickedDateTime = DateTime(
+                            datePart.year,
+                            datePart.month,
+                            datePart.day,
+                            int.parse(splitTime[0]),
+                            int.parse(splitTime[1]),
+                          );
+
+                          DateTime today = DateTime.now();
+
+                          if (pickedDateTime.isBefore(today)) {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return const ErrorDialog(title: "Invalid Time Selected!");
+                              },
+                            );
+                            return null;
+                          }
+
                           setState(() {
                             widget.task.time = pickedTime;
                           });
+                          return formatTime(pickedTime);
                         }
                         return pickedTime;
                       }
@@ -140,7 +181,7 @@ class _TaskDateTimeSelectionScreenState
             ),
             SelectionField(
               title: "Stop Repeating After",
-              initialValue: "Never",
+              initialValue: widget.task.repeatPattern != null ? _checkRepeatType(widget.task.repeatPattern!) : "Never",
               onTap: widget.task.repeatPattern != null
                   ? () async {
                       final data = await Navigator.pushNamed(context, '/taskRepeatUntilScreen', arguments: widget.task.repeatPattern) as List?;
@@ -148,25 +189,25 @@ class _TaskDateTimeSelectionScreenState
                           if (data[1] == "Never") {
 
                             setState(() {
-                              widget.task.repeatPattern!.repeatUntilType =
+                              widget.task.repeatPattern!.repeatType =
                               "Never";
                             });
                             return data[0];
                           } else if (data[1] == "Time") {
 
                             setState(() {
-                              widget.task.repeatPattern!.repeatUntilType = "Time";
+                              widget.task.repeatPattern!.repeatType = "Time";
                               widget.task.repeatPattern!.repeatUntil = data[0];
                             });
-                            return data[0];
+                            return formatDate(data[0]);
                           } else {
 
                             setState(() {
-                              widget.task.repeatPattern!.repeatUntilType =
+                              widget.task.repeatPattern!.repeatType =
                               "Count";
                               widget.task.repeatPattern!.numOccurrence = data[0];
                             });
-                            return "${data[0]} Iterations";
+                            return "${data[0]} Occurrences";
                           }
                         }
 
@@ -176,10 +217,21 @@ class _TaskDateTimeSelectionScreenState
             const Divider(color: Colors.grey),
             SelectionField(
               title: "Reminders",
-              initialValue: "At Task Time",
-              onTap: () {
-                Navigator.pushNamed(context, '/taskRemindersScreen');
-              },
+              initialValue: widget.task.reminders != null ? "Active" : "Disabled",
+              onTap: widget.task.date != null ? () async {
+                final reminderList = await Navigator.pushNamed(context, '/taskRemindersScreen' , arguments: widget.task.reminders);
+                if(reminderList != null){
+                  final newRemindersList = reminderList as List<TaskReminder>;
+                  if(reminderList.isNotEmpty ){
+                    setState(() {
+                      widget.task.reminders = newRemindersList;
+                    });
+                    return "Active";
+                  }
+                  widget.task.reminders = null;
+                  return "Disabled";
+                }
+              } : null,
             ),
             buildAlarmTile(),
           ],
@@ -195,7 +247,7 @@ class _TaskDateTimeSelectionScreenState
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Colors.grey, width: 1.0),
       ),
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -205,8 +257,19 @@ class _TaskDateTimeSelectionScreenState
           ),
           CustomSlider(
             onValueChanged: (value) {
-              print("Slider value changed to: $value");
+              for(TaskReminder reminder in widget.task.reminders ?? []){
+                if(value == -1){
+                  reminder.reminderType = "Alarm";
+                }
+                else if(value == 1){
+                  reminder.reminderType = "Voice";
+                }
+                else{
+                  reminder.reminderType = "Default";
+                }
+              }
             },
+            initialValue: widget.task.reminders == null ? 0 : _checkReminderType(widget.task.reminders![0]),
           ),
           Text(
             'Voice',
@@ -217,216 +280,33 @@ class _TaskDateTimeSelectionScreenState
     );
   }
 }
-//
-// class SetDateTimeScreen extends StatefulWidget {
-//   @override
-//   _SetDateTimeScreenState createState() => _SetDateTimeScreenState();
-// }
-//
-// class _SetDateTimeScreenState extends State<SetDateTimeScreen> {
-//   String selectedDate = 'Sun, 8 Sept';
-//   String selectedTime = '11:30 AM';
-//   bool isAlarmOn = true;
-//   String selectedRepeatOption = "Never";
-//   String selectedStopRepeatOption = "Never";
-//   String reminderText = '5 minutes before the task';
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Color(0xFF0A1A2A),
-//       appBar: AppBar(
-//         backgroundColor: Color(0xFF0A1329),
-//         title: Text(
-//           'Set Date/time',
-//           style: appBarHeadingStyle(),
-//         ),
-//         leading: IconButton(
-//           icon: Icon(Icons.close, color: Colors.white),
-//           onPressed: () {
-//             Navigator.pop(context);
-//           },
-//         ),
-//         actions: [
-//           TextButton(
-//             onPressed: () {
-//               Navigator.pop(context);
-//             },
-//             child: Text(
-//               'Set',
-//               style: appBarHeadingButton(),
-//             ),
-//           ),
-//         ],
-//         bottom: PreferredSize(
-//           preferredSize: Size.fromHeight(2),
-//           child: Container(
-//             color: Colors.white.withOpacity(0.6),
-//             height: 2,
-//           ),
-//         ),
-//       ),
-//       body: Padding(
-//         padding: const EdgeInsets.all(20.0),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             buildListTile('Date', selectedDate, context, _selectDate),
-//             buildListTile('Time', selectedTime, context, _selectTime),
-//             // buildListTile('Repeat', selectedRepeatOption, context,
-//             //     _navigateToRepeatScreen),
-//             buildListTile('Stop repeating after', selectedStopRepeatOption,
-//                 context, _navigateToStopRepeatingAfterScreen),
-//             buildDivider(),
-//             buildListTile(
-//                 'Reminders', reminderText, context, _navigateToRemindersScreen),
-//             buildAlarmTile(),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-//
-//   Widget buildListTile(String title, String value, BuildContext context,
-//       [VoidCallback? onTap]) {
-//     return ListTile(
-//       title: Text(
-//         title,
-//         style: TimeLeftContent(),
-//       ),
-//       trailing: Row(
-//         mainAxisSize: MainAxisSize.min,
-//         children: [
-//           Text(
-//             value,
-//             style: TimeContentRight(),
-//           ),
-//           Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-//         ],
-//       ),
-//       onTap: onTap,
-//     );
-//   }
-//
-//   Divider buildDivider() {
-//     return Divider(color: Colors.grey);
-//   }
-//
-//   void _selectDate() async {
-//     DateTime? pickedDate = await showModalBottomSheet<DateTime>(
-//       context: context,
-//       builder: (context) => Placeholder(),
-//     );
-//
-//     if (pickedDate != null) {
-//       setState(() {
-//         selectedDate =
-//             "${pickedDate.day} ${_getMonthName(pickedDate.month)} ${pickedDate.year}";
-//       });
-//     }
-//   }
-//
-//   void _selectTime() async {
-//     String? pickedTime = await showModalBottomSheet<String>(
-//       context: context,
-//       builder: (context) => CustomTimePicker(),
-//     );
-//
-//     if (pickedTime != null) {
-//       setState(() {
-//         selectedTime = pickedTime;
-//       });
-//     }
-//   }
-//
-//   String _getMonthName(int month) {
-//     const monthNames = [
-//       "",
-//       "Jan",
-//       "Feb",
-//       "Mar",
-//       "Apr",
-//       "May",
-//       "Jun",
-//       "Jul",
-//       "Aug",
-//       "Sep",
-//       "Oct",
-//       "Nov",
-//       "Dec"
-//     ];
-//     return monthNames[month];
-//   }
-//
-//   // void _navigateToRepeatScreen() {
-//   //   Navigator.push(
-//   //     context,
-//   //     MaterialPageRoute(
-//   //       builder: (context) => TaskRepeatScreen(
-//   //         onSave: (selectedOption) {
-//   //           setState(() {
-//   //             selectedRepeatOption = selectedOption;
-//   //           });
-//   //         },
-//   //       ),
-//   //     ),
-//   //   );
-//   }
-//
-//   void _navigateToStopRepeatingAfterScreen() {
-//     Navigator.push(
-//       context,
-//       MaterialPageRoute(
-//         builder: (context) => StopRepeatScreen(
-//           onOptionSelected: (String selectedOption, [int? countValue]) {
-//             setState(() {
-//               selectedStopRepeatOption = selectedOption;
-//             });
-//           },
-//         ),
-//       ),
-//     );
-//   }
-//
-//   void _navigateToRemindersScreen() {
-//     Navigator.push(
-//       context,
-//       MaterialPageRoute(
-//         builder: (context) => RemindersScreen(onSave: (selectedOptions) {
-//           setState(() {
-//             reminderText = selectedOptions.join(', ');
-//           });
-//         }),
-//       ),
-//     );
-//   }
-//
-//   Widget buildAlarmTile() {
-//     return Container(
-//       decoration: BoxDecoration(
-//         color: Color(0xFF0A1A2A),
-//         borderRadius: BorderRadius.circular(10),
-//         border: Border.all(color: Colors.grey, width: 1.0),
-//       ),
-//       padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-//       child: Row(
-//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//         children: [
-//           Text(
-//             'Alarm',
-//             style: TimeLeftContent(),
-//           ),
-//           CustomSlider(
-//             onValueChanged: (value) {
-//               print("Slider value changed to: $value");
-//             },
-//           ),
-//           Text(
-//             'Voice',
-//             style: TimeLeftContent(),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
+String formatDate(String dateInput) {
+  DateTime parsedDate = DateFormat('yyyy-MM-dd').parse(dateInput);
+  return DateFormat('d MMM yyyy').format(parsedDate);
+}
+
+String formatTime(String timeInput) {
+  DateTime parsedTime = DateFormat('HH:mm').parse(timeInput);
+  return DateFormat('h:mm a').format(parsedTime);
+}
+
+double _checkReminderType(TaskReminder reminder){
+  if(reminder.reminderType == "Voice"){
+    return 1;
+  }
+  else if(reminder.reminderType == "Alarm"){
+    return -1;
+  }
+  return 0;
+}
+
+
+String _checkRepeatType(TaskRepetition repeatPattern){
+  if (repeatPattern.repeatType == "Time"){
+    return formatDate(repeatPattern.repeatUntil!);
+  }
+  else if(repeatPattern.repeatType == "Count"){
+    return "${repeatPattern.numOccurrence} Occurrences";
+  }
+  return "Never";
+}

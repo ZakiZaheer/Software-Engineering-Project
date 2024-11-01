@@ -3,15 +3,16 @@ import 'package:flutter/material.dart';
 
 class CustomAlertSlider extends StatefulWidget {
   final Function(double) onValueChanged;
+  final double initialValue;
 
-  const CustomAlertSlider({super.key, required this.onValueChanged});
+  const CustomAlertSlider({super.key, required this.onValueChanged , this.initialValue =0});
 
   @override
   _CustomAlertSliderState createState() => _CustomAlertSliderState();
 }
 
 class _CustomAlertSliderState extends State<CustomAlertSlider> {
-  double _sliderValue = 0;
+  late double _sliderValue;
 
   final List<double> sliderSteps = [-1, 0, 1];
 
@@ -19,6 +20,12 @@ class _CustomAlertSliderState extends State<CustomAlertSlider> {
     int divisions = sliderSteps.length - 1;
     int nearestDivision = ((value + 1) * divisions / 2).round();
     return sliderSteps[nearestDivision];
+  }
+
+  @override
+  void initState() {
+    _sliderValue = widget.initialValue;
+    super.initState();
   }
 
   @override
@@ -143,22 +150,29 @@ class _CustomAlertSliderState extends State<CustomAlertSlider> {
 }
 
 class CustomSlider extends StatefulWidget {
+  final double initialValue;
   final Function(double) onValueChanged;
 
-  CustomSlider({required this.onValueChanged});
+  CustomSlider({required this.onValueChanged , this.initialValue = 0});
 
   @override
   _CustomSliderState createState() => _CustomSliderState();
 }
 
 class _CustomSliderState extends State<CustomSlider> {
-  double _sliderValue = 0;
+  late double _sliderValue;
   final List<double> sliderSteps = [-1, 0, 1];
 
   double _snapSlider(double value) {
     int divisions = sliderSteps.length - 1;
     int nearestDivision = ((value + 1) * divisions / 2).round();
     return sliderSteps[nearestDivision];
+  }
+
+  @override
+  void initState() {
+    _sliderValue = widget.initialValue;
+    super.initState();
   }
 
   @override

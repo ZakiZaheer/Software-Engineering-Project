@@ -66,7 +66,7 @@ class TaskDescription extends StatelessWidget {
                       const SizedBox(height: 8),
                       // Space between title and details
                       if(task.date!=null)...[
-                      Row(
+                      Wrap(
                         children: [
                           const Icon(Icons.timer),
                           Text(
@@ -87,17 +87,20 @@ class TaskDescription extends StatelessWidget {
                               ),
                             ),
                           if (task.repeatPattern != null)
-                            ...[
-                              const Icon(Icons.repeat),
-                              Text(
-                                " Every ${task.repeatPattern!.repeatInterval} ${task.repeatPattern!.repeatUnit}",
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors
-                                      .white, // Use black text to contrast
+                            Wrap(
+                              children: [
+                                const Icon(Icons.repeat),
+                                Text(
+                                  " Every ${task.repeatPattern!.repeatInterval} ${task.repeatPattern!.repeatUnit}",
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors
+                                        .white, // Use black text to contrast
+                                  ),
                                 ),
-                              ),
-                          ]
+                              ],
+                            )
+
                         ],
                       ),
                       const SizedBox(height: 5),],
@@ -144,8 +147,9 @@ class TaskDescription extends StatelessWidget {
                 ),
                 // Edit button
                 ElevatedButton(
-                  onPressed: () {
-                    // Add edit functionality
+                  onPressed: () async {
+                    final category = await Navigator.pushNamed(context, '/taskModificationScreen' , arguments: task);
+                    Navigator.pop(context , category);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
@@ -181,12 +185,8 @@ String _formatTime(String timeString) {
   return 'At $formattedTime';
 }
 
-String _formatDate(String dateString) {
-  final DateFormat inputFormat = DateFormat('dd-MM-yyyy');
-  final DateFormat outputFormat = DateFormat('dd MMM');
+String _formatDate(String dateInput) {
+  DateTime parsedDate = DateFormat('yyyy-MM-dd').parse(dateInput);
+  return "On ${DateFormat('d MMM').format(parsedDate)}";
 
-  DateTime dateTime = inputFormat.parse(dateString);
-  String formattedDate = outputFormat.format(dateTime);
-
-  return 'On $formattedDate';
 }

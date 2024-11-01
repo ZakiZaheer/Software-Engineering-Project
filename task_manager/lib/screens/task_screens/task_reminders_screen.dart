@@ -17,13 +17,33 @@ class TaskRemindersScreen extends StatefulWidget {
 
 class _TaskRemindersScreenState extends State<TaskRemindersScreen> {
   List<String> options = [
-    "5 minutes",
-    "1 hour",
-    "1 day",
-    "1 week",
+    "5 Minutes",
+    "1 Hour",
+    "1 Day",
+    "1 Week",
   ];
 
-  List<String> selectedOptions = [];
+  @override
+  void initState() {
+    if(widget.reminders != null){
+      for(TaskReminder reminder in widget.reminders!) {
+        final option = "${reminder.reminderInterval} ${reminder.reminderUnit}";
+        if (option == "0 Minute") {
+          selectedOptions.add("At Time Of Task");
+        }
+        else {
+          if (!options.contains(option)) {
+            options.add(option);
+          }
+          selectedOptions.add(option);
+        }
+      }
+    }
+    super.initState();
+  }
+
+  List<String> selectedOptions = [
+  ];
   bool remindersEnabled = true; // Toggle for reminders switch
 
   @override
@@ -46,14 +66,18 @@ class _TaskRemindersScreenState extends State<TaskRemindersScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              List<TaskReminder> reminderList = List.generate(selectedOptions.length - 1, (index){
-                final parts = selectedOptions[index + 1].split(" ");
+              List<TaskReminder> reminderList = [];
+              print(selectedOptions);
+              if(selectedOptions.contains("At Time Of Task")){
+                selectedOptions.remove("At Time Of Task");
+                reminderList.add(TaskReminder(reminderInterval: 0, reminderUnit: "Minute"));
+              }
+              reminderList = reminderList + List.generate(selectedOptions.length, (index){
+                final parts = selectedOptions[index].split(" ");
                 return TaskReminder(reminderInterval: int.parse(parts[0]), reminderUnit: parts[1]);
               });
-              if(selectedOptions.contains("At Time Of Task")){
-                reminderList.insert(0, TaskReminder(reminderInterval: 0, reminderUnit: "Minute"));
-              }
-              Navigator.pop(context);
+              print(reminderList);
+              Navigator.pop(context , reminderList);
             },
             child: Text(
               "Save",
@@ -89,6 +113,7 @@ class _TaskRemindersScreenState extends State<TaskRemindersScreen> {
                   value: remindersEnabled,
                   onChanged: (value) {
                     setState(() {
+                      selectedOptions = [];
                       remindersEnabled = value;
                     });
                   },
@@ -142,15 +167,19 @@ class _TaskRemindersScreenState extends State<TaskRemindersScreen> {
                       showCustomRepeatPicker(
                         context,
                         title: 'Custom Reminder',
+                        forReminder: true,
                         onConfirm: (interval, unit) {
                           final option = "$interval $unit";
                           if (!options.contains(option)){
                             options.add(option);
-                            selectedOptions.add(option);
-                            setState(() {
 
-                            });
                           }
+                          if(!selectedOptions.contains(option)){
+                            selectedOptions.add(option);
+                          }
+                          setState(() {
+
+                          });
                         },
                       );
                     },
