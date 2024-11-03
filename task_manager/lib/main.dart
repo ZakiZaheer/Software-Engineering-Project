@@ -19,6 +19,7 @@ import 'model/task_modal.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await NotificationService.initNotification();
   await WorkManagerService.initialize();
   tz.initializeTimeZones();

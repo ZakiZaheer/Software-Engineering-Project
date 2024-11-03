@@ -22,6 +22,8 @@ class TaskDateTimeSelectionScreen extends StatefulWidget {
 
 class _TaskDateTimeSelectionScreenState
     extends State<TaskDateTimeSelectionScreen> {
+
+  String _reminderType = "Default";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,6 +43,11 @@ class _TaskDateTimeSelectionScreenState
         actions: [
           TextButton(
             onPressed: () {
+              if(widget.task.reminders != null){
+                for(TaskReminder reminder in widget.task.reminders!){
+                  reminder.reminderType = _reminderType;
+                }
+              }
               Navigator.pop(context, widget.task);
             },
             child: Text(
@@ -256,17 +263,16 @@ class _TaskDateTimeSelectionScreenState
           ),
           CustomSlider(
             onValueChanged: (value) {
-              for(TaskReminder reminder in widget.task.reminders ?? []){
                 if(value == -1){
-                  reminder.reminderType = "Alarm";
+                  _reminderType = "Alarm";
                 }
                 else if(value == 1){
-                  reminder.reminderType = "Voice";
+                  _reminderType = "Voice";
                 }
                 else{
-                  reminder.reminderType = "Default";
+                  _reminderType = "Default";
                 }
-              }
+
             },
             initialValue: widget.task.reminders == null ? 0 : _checkReminderType(widget.task.reminders![0]),
           ),

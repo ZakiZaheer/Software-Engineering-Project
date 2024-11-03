@@ -27,8 +27,6 @@ class SpeechToTextService {
     if (_speechEnabled && _speechToText.isListening) {
       await _speechToText.stop();
       onStop();
-    } else {
-      print("Speech recognition is either not enabled or not currently listening.");
     }
   }
 }

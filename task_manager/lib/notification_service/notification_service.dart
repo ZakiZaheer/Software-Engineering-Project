@@ -71,7 +71,7 @@ class NotificationService {
         importance: Importance.high,
         priority: Priority.high,
         playSound: true,
-        sound: const RawResourceAndroidNotificationSound('phonk_alarm'),
+        sound: const RawResourceAndroidNotificationSound('b'),
         vibrationPattern: vibrationPattern,
         // Vibration pattern
         enableVibration: true, // Enable vibration

@@ -21,7 +21,7 @@ class _MainFooterState extends State<MainFooter> {
   final TextEditingController _micController =
   TextEditingController();
   final SpeechToTextService _sst = SpeechToTextService();
-  late final Gradient gradient;
+
 
   final List<String> _pages = [
     '/',
@@ -41,6 +41,9 @@ class _MainFooterState extends State<MainFooter> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double navItemSize = screenWidth * 0.1; // Adjust this multiplier as needed
+    double micSize = screenWidth * 0.2;
     return Stack(
       children: [
         Container(
@@ -115,12 +118,12 @@ class _MainFooterState extends State<MainFooter> {
                 child: Row(
                   // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    Expanded(child: _buildNavItem(Icons.checklist, 'Tasks', 0)),
-                    Expanded(child: _buildNavItem(Icons.event, 'Events', 1)),
+                    Expanded(child: _buildNavItem(Icons.checklist, 'Tasks', 0,navItemSize)),
+                    Expanded(child: _buildNavItem(Icons.event, 'Events', 1,navItemSize)),
                     const Spacer(), // Adds flexible space in between
                     Expanded(
-                        child: _buildNavItem(Icons.stars_sharp, 'Classroom', 2)),
-                    Expanded(child: _buildNavItem(Icons.settings, 'Settings', 3)),
+                        child: _buildNavItem(Icons.stars_sharp, 'Classroom', 2,navItemSize)),
+                    Expanded(child: _buildNavItem(Icons.settings, 'Settings', 3,navItemSize)),
                   ],
                 ),
               ),
@@ -130,8 +133,7 @@ class _MainFooterState extends State<MainFooter> {
         Positioned(
           // Mic widget, centered horizontally
           top: 10 + (_sizeFactor * 120),
-          left: MediaQuery.of(context).size.width / 2 -
-              45, // Center horizontally
+          left: MediaQuery.of(context).size.width / 2 - (micSize / 2), // Center horizontally
           child: GestureDetector(
             onLongPressStart: (details) async {
               setState(() {
@@ -149,26 +151,26 @@ class _MainFooterState extends State<MainFooter> {
             },
             onLongPressEnd: (details) async {
               // Stop listening and reset state
+              hold = false;
+              _sizeFactor = 0;
               await _sst.stopListening(() {
-                setState(() {
-                  hold = false;
-                  _sizeFactor = 0;
-                  _micController.text = ""; // Uncomment to clear after stopping
-                });
+                _micController.text = ""; // Uncomment to clear after stopping
+              });
+              setState(() {
               });
             },
             onLongPressCancel: ()async {
+              hold = false;
+              _sizeFactor = 0;
               await _sst.stopListening(() {
-                setState(() {
-                  hold = false;
-                  _sizeFactor = 0;
                   _micController.text = ""; // Uncomment to clear after stopping
-                });
+              });
+              setState(() {
               });
             },
             child: Container(
-              width: 90,
-              height: 90,
+              width: micSize,
+              height: micSize,
               decoration: BoxDecoration(
                 color: Colors.white,
                 gradient: hold
@@ -212,11 +214,14 @@ class _MainFooterState extends State<MainFooter> {
       ],
     );
   }
-  Widget _buildNavItem(IconData icon, String label, int index) {
+  Widget _buildNavItem(IconData icon, String label, int index , double size) {
     return GestureDetector(
       onTap: () {
         setState(() {
-          Navigator.pushNamed(context, _pages[index]);
+          if(index != _currentIndex){
+            Navigator.pushNamed(context, _pages[index]);
+          }
+
         });
       },
       child: Column(
@@ -225,8 +230,8 @@ class _MainFooterState extends State<MainFooter> {
           ClipRRect(
             borderRadius: BorderRadius.circular(18.0),
             child: Container(
-              width: 50,
-              height: 50,
+              width: size,
+              height: size,
               color:
               _currentIndex == index ? Colors.yellowAccent : Colors.black,
               child: Icon(
@@ -239,7 +244,7 @@ class _MainFooterState extends State<MainFooter> {
             label,
             style: TextStyle(
               color: _currentIndex == index ? Colors.white : Colors.white,
-              fontSize: 15,
+              fontSize: 0.3 * size,
             ),
           )
         ],
