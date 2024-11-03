@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:task_manager/model/taskReminder_modal.dart';
 import 'package:task_manager/model/taskRepetition_modal.dart';
 import 'package:task_manager/notification_service/notification_service.dart';
+import 'package:task_manager/notification_service/work_manger_service.dart';
 import 'package:task_manager/screens/task_screens/task_creation_screen.dart';
 import 'package:task_manager/screens/task_screens/task_modification_screen.dart';
 import 'package:task_manager/screens/task_screens/task_reminders_screen.dart';
@@ -16,6 +17,7 @@ import 'model/task_modal.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService.initNotification();
+  await WorkManagerService.initialize();
   tz.initializeTimeZones();
   runApp(MyApp());
 }
@@ -48,3 +50,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+

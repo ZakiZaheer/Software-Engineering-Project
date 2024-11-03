@@ -14,7 +14,8 @@ dependencies:
   supabase_flutter: ^2.6.0
   intl:
   flutter_local_notifications:
-
+  flutter_tts:
+  workmanager:
 dev_dependencies:
   flutter_test:
     sdk: flutter

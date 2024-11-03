@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:task_manager/customWidgets/TaskAlert.dart';
 import 'package:task_manager/customWidgets/TaskTile.dart';
@@ -5,6 +7,7 @@ import 'package:task_manager/customWidgets/Taskdiscription.dart';
 import 'package:task_manager/customWidgets/taskExpansionTile.dart';
 import 'package:task_manager/notification_service/notification_service.dart';
 import 'package:task_manager/customWidgets/NewList.dart';
+import 'package:task_manager/notification_service/work_manger_service.dart';
 import '../../database_service/sqfliteService.dart';
 import '../../model/subTask_modal.dart';
 import '../../model/taskReminder_modal.dart';
@@ -160,13 +163,12 @@ class _TaskScreenState extends State<TaskScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFFBBD3B),
-        onPressed: () {
-          // Navigator.pushNamed(context, '/taskCreationScreen')
-          //     .then((data) async {
-          //   _currentCategory = data as String;
-          //   await loadTasks();
-          // });
-          NotificationService.instantNotification("Testing I am", "HAhahaha");
+        onPressed: ()async {
+          Navigator.pushNamed(context, '/taskCreationScreen')
+              .then((data) async {
+            _currentCategory = data as String;
+            await loadTasks();
+          });
         },
         child: const Icon(Icons.add, color: Colors.black),
       ),
@@ -376,29 +378,5 @@ class _TaskScreenState extends State<TaskScreen> {
         );
       },
     );
-  }
-
-  _scheduleTask() async {
-    Task task = Task(
-      id: 1,
-      title: "Complete Flutter Project",
-      description: null,
-      priority: 1,
-      category: "To-Do",
-      date: "2024-10-28",
-      time: "20:00",
-      status: false,
-      reminders: [
-        TaskReminder(reminderInterval: 0, reminderUnit: "Minute"),
-        TaskReminder(reminderInterval: 1, reminderUnit: "Minute"),
-        TaskReminder(reminderInterval: 2, reminderUnit: "Minute")
-      ],
-      subTasks: [
-        SubTask(title: "Fix layout bugs", status: false),
-        SubTask(title: "Implement login system", status: false)
-      ],
-    );
-
-    await NotificationService.scheduleTaskReminder(task);
   }
 }

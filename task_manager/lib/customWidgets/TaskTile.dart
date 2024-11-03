@@ -36,7 +36,6 @@ class _TaskTileState extends State<TaskTile> {
         checkBox = IconButton(
             onPressed: () async {
               await widget.onChecked(widget.task);
-              await NotificationService.scheduleTaskReminder(widget.task);
             },
             icon: const Icon(
               Icons.check,

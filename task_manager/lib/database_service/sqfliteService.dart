@@ -6,6 +6,7 @@ import 'package:task_manager/model/subTask_modal.dart';
 import 'package:task_manager/model/taskReminder_modal.dart';
 import 'package:task_manager/model/taskRepetition_modal.dart';
 import 'package:task_manager/notification_service/notification_service.dart';
+import 'package:task_manager/notification_service/work_manger_service.dart';
 import '../model/task_modal.dart';
 
 class SqfLiteService {
@@ -112,7 +113,7 @@ class SqfLiteService {
   Future<void> insertTask(Task task) async {
     final db = await database;
     int taskId = await db.insert('task', task.toMap());
-
+    task.id = taskId;
     if (task.repeatPattern != null) {
       task.repeatPattern!.taskId = taskId;
       await insertTaskRepetition(task.repeatPattern!);
@@ -130,9 +131,18 @@ class SqfLiteService {
         task.reminders![i].taskId = taskId;
         await insertTaskReminder(task.reminders![i]);
       }
+      if(task.reminders![0].reminderType == "Voice"){
+        await WorkManagerService.scheduleTaskVoiceNotification(task);
+      }
+      else if(task.reminders![0].reminderType == "Alarm"){
+        await NotificationService.scheduleTaskAlarmReminder(task);
+      }
+      else{
+        await NotificationService.scheduleTaskDefaultReminder(task);
+      }
     }
-    task.id = taskId;
-    NotificationService.scheduleTaskReminder(task);
+
+
   }
 
   Future<List<Task>> getTasks(String category) async {
@@ -223,6 +233,14 @@ class SqfLiteService {
   Future<void> deleteTask(Task task) async {
     final db = await database;
     await db.delete('task', where: 'id = ?', whereArgs: [task.id!]);
+    if(task.reminders != null){
+        if(task.reminders![0].reminderType == "Voice"){
+          await WorkManagerService.cancelTaskVoiceNotification(task);
+        }
+        else{
+          await NotificationService.cancelTaskReminders(task);
+        }
+    }
   }
 
   Future<void> modifyTask(Task task) async {
@@ -231,10 +249,13 @@ class SqfLiteService {
         .update('task', task.toMap(), where: 'id = ?', whereArgs: [task.id!]);
     await deleteSubTask(task.id!);
     await deleteTaskReminders(task.id!);
+    await deleteTaskRepetition(task.id!);
+
     if (task.repeatPattern != null) {
-      await db.update('task_repetition', task.repeatPattern!.toMap(),
-          where: 'task_id = ?', whereArgs: [task.id!]);
+      task.repeatPattern!.taskId = task.id!;
+      await insertTaskRepetition(task.repeatPattern!);
     }
+
     if (task.subTasks != null) {
       for (int i = 0; i < task.subTasks!.length; i++) {
         task.subTasks![i].taskId = task.id!;
@@ -246,8 +267,17 @@ class SqfLiteService {
         task.reminders![i].taskId = task.id!;
         await insertTaskReminder(task.reminders![i]);
       }
+      if(task.reminders![0].reminderType == "Voice"){
+        await WorkManagerService.scheduleTaskVoiceNotification(task);
+      }
+      else if(task.reminders![0].reminderType == "Alarm"){
+        await NotificationService.scheduleTaskAlarmReminder(task);
+      }
+      else{
+        NotificationService.scheduleTaskDefaultReminder(task);
+      }
     }
-    await NotificationService.scheduleTaskReminder(task);
+
   }
 
   Future<void> updateTaskStatus(Task task) async {
@@ -261,12 +291,29 @@ class SqfLiteService {
       await db.update('sub_task', {"status": status},
           where: "task_id = ?", whereArgs: [task.id!]);
     }
-    if(status == 1){
-      await NotificationService.cancelTaskReminders(task);
+    if(task.reminders != null){
+      if(status == 1){
+        if(task.reminders![0].reminderType == "Voice"){
+          await WorkManagerService.cancelTaskVoiceNotification(task);
+        }
+        else{
+          await NotificationService.cancelTaskReminders(task);
+        }
+
+      }
+      else{
+        if(task.reminders![0].reminderType == "Voice"){
+          await WorkManagerService.scheduleTaskVoiceNotification(task);
+        }
+        else if(task.reminders![0].reminderType == "Alarm") {
+          await NotificationService.scheduleTaskAlarmReminder(task);
+        }
+        else{
+          await NotificationService.scheduleTaskDefaultReminder(task);
+        }
+      }
     }
-    else{
-      await NotificationService.scheduleTaskReminder(task);
-    }
+
 
 
     if (task.repeatPattern != null) {

@@ -9,6 +9,7 @@ import 'package:task_manager/model/subTask_modal.dart';
 import 'package:task_manager/Custom_Fonts.dart';
 import 'package:task_manager/customWidgets/alert_slider.dart';
 import 'package:task_manager/model/taskReminder_modal.dart';
+import 'package:task_manager/notification_service/notification_service.dart';
 import '../../model/task_modal.dart';
 
 class TaskModificationScreen extends StatefulWidget {
@@ -28,7 +29,7 @@ class _TaskModificationScreenState extends State<TaskModificationScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _subTaskController = TextEditingController();
-  List<TaskReminder>? initialReminders;
+  List<TaskReminder> initialReminders = [];
   Future<void> loadCategories() async {
     categories = await db.getCategories();
     setState(() {});
@@ -37,8 +38,8 @@ class _TaskModificationScreenState extends State<TaskModificationScreen> {
 
 
   Future<void> modifyTask() async {
-    print(initialReminders);
-    print(widget.task.reminders);
+    print("initialReminders: $initialReminders");
+    print("current reminders: ${widget.task.reminders}");
     if (_titleController.text.isNotEmpty) {
       widget.task.title = _titleController.text;
       if (_descriptionController.text.isNotEmpty) {
@@ -60,6 +61,7 @@ class _TaskModificationScreenState extends State<TaskModificationScreen> {
           widget.task.subTasks![i].title = subTasksControllers[i].text;
         }
       }
+      await NotificationService.cancelModifiedTaskReminders(initialReminders);
       await db.modifyTask(widget.task);
       Navigator.pop(context, _selectedCategory ?? "To-Do");
     } else {
@@ -83,7 +85,11 @@ class _TaskModificationScreenState extends State<TaskModificationScreen> {
         subTasksControllers.add(TextEditingController(text: subTask.title));
       }
     }
-    initialReminders = widget.task.reminders;
+    if(widget.task.reminders != null){
+      for(TaskReminder reminder in widget.task.reminders!){
+        initialReminders.add(reminder);
+      }
+    }
     loadCategories();
     setState(() {});
   }
