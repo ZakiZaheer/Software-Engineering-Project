@@ -16,6 +16,8 @@ dependencies:
   flutter_local_notifications:
   flutter_tts:
   workmanager:
+  speech_to_text: ^6.3.0
+  regexed_validator: ^2.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

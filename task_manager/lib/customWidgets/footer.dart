@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 import 'package:task_manager/screens/task_screens/task_screen.dart';
+import 'package:task_manager/voice%20Connectivity/speech_to_text_service.dart';
 import 'gradient_text.dart';
 
 class MainFooter extends StatefulWidget {
@@ -17,6 +19,7 @@ class _MainFooterState extends State<MainFooter> {
   int _sizeFactor =0;
   final TextEditingController _micController =
   TextEditingController();
+  final SpeechToTextService _sst = SpeechToTextService();
   late final Gradient gradient;
 
   final List<Widget> _pages = [
@@ -28,11 +31,17 @@ class _MainFooterState extends State<MainFooter> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _sst.initSpeech();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         Container(
-          height: 120+ (_sizeFactor * 120),
+          height: 120 + (_sizeFactor * 120),
           decoration: const BoxDecoration(
             color: Color(0xFF091F40),
           ),
@@ -121,22 +130,37 @@ class _MainFooterState extends State<MainFooter> {
           left: MediaQuery.of(context).size.width / 2 -
               45, // Center horizontally
           child: GestureDetector(
-            onLongPressStart: (details) {
+            onLongPressStart: (details) async {
               setState(() {
                 hold = true;
                 _sizeFactor = 1;
               });
-            },
-            onLongPressEnd: (details) {
-              setState(() {
-                hold = false;
-                _sizeFactor = 0;
+              // Start listening
+              await _sst.startListening((result) {
+                if (result.recognizedWords.isNotEmpty) {
+                  setState(() {
+                    _micController.text = result.recognizedWords;
+                  });
+                }
               });
             },
-            onLongPressCancel: () {
-              setState(() {
-                hold = false;
-                _sizeFactor = 0;
+            onLongPressEnd: (details) async {
+              // Stop listening and reset state
+              await _sst.stopListening(() {
+                setState(() {
+                  hold = false;
+                  _sizeFactor = 0;
+                  _micController.text = ""; // Uncomment to clear after stopping
+                });
+              });
+            },
+            onLongPressCancel: ()async {
+              await _sst.stopListening(() {
+                setState(() {
+                  hold = false;
+                  _sizeFactor = 0;
+                  _micController.text = ""; // Uncomment to clear after stopping
+                });
               });
             },
             child: Container(

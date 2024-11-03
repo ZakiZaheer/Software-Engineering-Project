@@ -8,7 +8,6 @@ import 'package:task_manager/database_service/sqfliteService.dart';
 import 'package:task_manager/model/subTask_modal.dart';
 import 'package:task_manager/Custom_Fonts.dart';
 import 'package:task_manager/customWidgets/alert_slider.dart';
-
 import '../../model/task_modal.dart';
 
 class TaskCreationScreen extends StatefulWidget {
