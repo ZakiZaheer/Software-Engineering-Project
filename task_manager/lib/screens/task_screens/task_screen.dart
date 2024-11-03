@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:task_manager/customWidgets/TaskAlert.dart';
 import 'package:task_manager/customWidgets/TaskTile.dart';
 import 'package:task_manager/customWidgets/Taskdiscription.dart';
+import 'package:task_manager/customWidgets/footer.dart';
 import 'package:task_manager/customWidgets/taskExpansionTile.dart';
 import 'package:task_manager/notification_service/notification_service.dart';
 import 'package:task_manager/customWidgets/NewList.dart';
@@ -172,6 +173,7 @@ class _TaskScreenState extends State<TaskScreen> {
         },
         child: const Icon(Icons.add, color: Colors.black),
       ),
+      bottomNavigationBar:const MainFooter(),
     );
   }
 

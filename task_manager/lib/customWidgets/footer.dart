@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:task_manager/screens/task_screens/task_screen.dart';
+import 'gradient_text.dart';
 
 class MainFooter extends StatefulWidget {
-  const MainFooter({super.key});
+  final Function()? onInput;
+  const MainFooter({super.key , this.onInput});
 
   @override
   State<MainFooter> createState() => _MainFooterState();
@@ -12,9 +14,9 @@ class _MainFooterState extends State<MainFooter> {
   int _currentIndex = 0;
   bool hold = false;
   int duration = 1;
-  int _x =0;
+  int _sizeFactor =0;
   final TextEditingController _micController =
-  TextEditingController(text: "Create A Task For Meeting Tomorrow");
+  TextEditingController();
   late final Gradient gradient;
 
   final List<Widget> _pages = [
@@ -30,7 +32,7 @@ class _MainFooterState extends State<MainFooter> {
     return Stack(
       children: [
         Container(
-          height: 120+ (_x * 120),
+          height: 120+ (_sizeFactor * 120),
           decoration: const BoxDecoration(
             color: Color(0xFF091F40),
           ),
@@ -60,7 +62,7 @@ class _MainFooterState extends State<MainFooter> {
                       : const SizedBox.shrink(),
                   hold
                       ?
-                  _micController.text.isNotEmpty
+                  _micController.text.isEmpty
                       ?
                   const GradientText(
                     text: 'Create an event',
@@ -87,51 +89,54 @@ class _MainFooterState extends State<MainFooter> {
           ),
         ),
         Padding(
-          padding:EdgeInsets.only(top: 25+ (_x * 120)),
+          padding:EdgeInsets.only(top: 25+ (_sizeFactor * 120)),
           child: Container(
             decoration: const BoxDecoration(
                 border:
                 Border(top: BorderSide(color: Colors.white, width: 2))),
             child: Container(
-              color: Colors.blueGrey, // Background color for BottomAppBar
+              color: const Color(0xFF0A1329), // Background color for BottomAppBar
 
               height: 95, // Height of the custom bottom navigation bar
-              child: Row(
-                // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Expanded(child: _buildNavItem(Icons.checklist, 'Tasks', 0)),
-                  Expanded(child: _buildNavItem(Icons.event, 'Events', 1)),
-                  const Spacer(), // Adds flexible space in between
-                  Expanded(
-                      child: _buildNavItem(Icons.stars_sharp, 'Classroom', 3)),
-                  Expanded(child: _buildNavItem(Icons.settings, 'Settings', 4)),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Row(
+                  // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Expanded(child: _buildNavItem(Icons.checklist, 'Tasks', 0)),
+                    Expanded(child: _buildNavItem(Icons.event, 'Events', 1)),
+                    const Spacer(), // Adds flexible space in between
+                    Expanded(
+                        child: _buildNavItem(Icons.stars_sharp, 'Classroom', 3)),
+                    Expanded(child: _buildNavItem(Icons.settings, 'Settings', 4)),
+                  ],
+                ),
               ),
             ),
           ),
         ),
         Positioned(
           // Mic widget, centered horizontally
-          top: 10 + (_x * 120),
+          top: 10 + (_sizeFactor * 120),
           left: MediaQuery.of(context).size.width / 2 -
               45, // Center horizontally
           child: GestureDetector(
             onLongPressStart: (details) {
               setState(() {
                 hold = true;
-                _x = 1;
+                _sizeFactor = 1;
               });
             },
             onLongPressEnd: (details) {
               setState(() {
                 hold = false;
-                _x = 0;
+                _sizeFactor = 0;
               });
             },
             onLongPressCancel: () {
               setState(() {
                 hold = false;
-                _x = 0;
+                _sizeFactor = 0;
               });
             },
             child: Container(

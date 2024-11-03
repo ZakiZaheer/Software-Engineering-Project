@@ -44,7 +44,7 @@ class _TaskRemindersScreenState extends State<TaskRemindersScreen> {
 
   List<String> selectedOptions = [
   ];
-  bool remindersEnabled = true; // Toggle for reminders switch
+  bool remindersEnabled = false; // Toggle for reminders switch
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +67,6 @@ class _TaskRemindersScreenState extends State<TaskRemindersScreen> {
           TextButton(
             onPressed: () {
               List<TaskReminder> reminderList = [];
-              print(selectedOptions);
               if(selectedOptions.contains("At Time Of Task")){
                 selectedOptions.remove("At Time Of Task");
                 reminderList.add(TaskReminder(reminderInterval: 0, reminderUnit: "Minute"));
@@ -95,8 +94,7 @@ class _TaskRemindersScreenState extends State<TaskRemindersScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
           children: [
             Row(
               children: [
@@ -125,25 +123,28 @@ class _TaskRemindersScreenState extends State<TaskRemindersScreen> {
             ),
             const SizedBox(height: 16),
             Opacity(
-              opacity: remindersEnabled ? 1.0 : 0.5, // Dim options if disabled
+              opacity: !remindersEnabled ? 1.0 : 0.5, // Dim options if disabled
               child: Column(
                 children: [
-                  GradientCheckBox(
-                      text: "At Time Of Task",
-                      isSelected: selectedOptions.contains("At Time Of Task"),
-                      onSelect: () {
-                        setState(() {
-                          if (selectedOptions.contains("At Time Of Task")) {
-                            selectedOptions.remove("At Time Of Task");
-                          } else {
-                            selectedOptions.add("At Time Of Task");
-                          }
-                        });
-                      }),
+                  IgnorePointer(
+                    ignoring: remindersEnabled,
+                    child: GradientCheckBox(
+                        text: "At Time Of Task",
+                        isSelected: selectedOptions.contains("At Time Of Task"),
+                        onSelect: () {
+                          setState(() {
+                            if (selectedOptions.contains("At Time Of Task")) {
+                              selectedOptions.remove("At Time Of Task");
+                            } else {
+                              selectedOptions.add("At Time Of Task");
+                            }
+                          });
+                        }),
+                  ),
                   ...options.map((option) {
                     bool isSelected = selectedOptions.contains(option);
                     return IgnorePointer(
-                      ignoring: !remindersEnabled,
+                      ignoring: remindersEnabled,
                       // Disable interactions if toggle is off
                       child: GradientCheckBox(
                         text: "$option Before Task",
@@ -160,29 +161,32 @@ class _TaskRemindersScreenState extends State<TaskRemindersScreen> {
                       ),
                     );
                   }),
-                  GradientCheckBox(
-                    text: "Custom",
-                    isSelected: false,
-                    onSelect: () {
-                      showCustomRepeatPicker(
-                        context,
-                        title: 'Custom Reminder',
-                        forReminder: true,
-                        onConfirm: (interval, unit) {
-                          final option = "$interval $unit";
-                          if (!options.contains(option)){
-                            options.add(option);
+                  IgnorePointer(
+                    ignoring: remindersEnabled,
+                    child: GradientCheckBox(
+                      text: "Custom",
+                      isSelected: false,
+                      onSelect: () {
+                        showCustomRepeatPicker(
+                          context,
+                          title: 'Custom Reminder',
+                          forReminder: true,
+                          onConfirm: (interval, unit) {
+                            final option = "$interval $unit";
+                            if (!options.contains(option)){
+                              options.add(option);
 
-                          }
-                          if(!selectedOptions.contains(option)){
-                            selectedOptions.add(option);
-                          }
-                          setState(() {
+                            }
+                            if(!selectedOptions.contains(option)){
+                              selectedOptions.add(option);
+                            }
+                            setState(() {
 
-                          });
-                        },
-                      );
-                    },
+                            });
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),

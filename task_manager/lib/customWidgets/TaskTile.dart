@@ -92,20 +92,16 @@ class _TaskTileState extends State<TaskTile> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          widget.task.title,
-                          style: TextStyle(
-                              decorationColor: Colors.white,
-                              decorationThickness: 1.5,
-                              fontSize: 16,
-                              color: Colors.white,
-                              decoration: decoration
-                              // Use black text to contrast
-                              ),
-                        ),
-                      ],
+                    Text(
+                      widget.task.title,
+                      style: TextStyle(
+                          decorationColor: Colors.white,
+                          decorationThickness: 1.5,
+                          fontSize: 16,
+                          color: Colors.white,
+                          decoration: decoration
+                          // Use black text to contrast
+                          ),
                     ),
                     if (widget.task.date != null)
                       Wrap(
