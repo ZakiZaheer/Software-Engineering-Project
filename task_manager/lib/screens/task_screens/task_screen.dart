@@ -173,7 +173,7 @@ class _TaskScreenState extends State<TaskScreen> {
         },
         child: const Icon(Icons.add, color: Colors.black),
       ),
-      bottomNavigationBar:const MainFooter(),
+      bottomNavigationBar:const MainFooter(index: 0,),
     );
   }
 

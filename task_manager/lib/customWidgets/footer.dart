@@ -6,7 +6,8 @@ import 'gradient_text.dart';
 
 class MainFooter extends StatefulWidget {
   final Function()? onInput;
-  const MainFooter({super.key , this.onInput});
+  final int index;
+  const MainFooter({super.key , this.onInput , required this.index});
 
   @override
   State<MainFooter> createState() => _MainFooterState();
@@ -22,18 +23,20 @@ class _MainFooterState extends State<MainFooter> {
   final SpeechToTextService _sst = SpeechToTextService();
   late final Gradient gradient;
 
-  final List<Widget> _pages = [
-    const TaskScreen(),
-    const Center(child: Text('Events', style: TextStyle(fontSize: 100))),
-    const Center(child: Text('Mic', style: TextStyle(fontSize: 100))),
-    Scaffold(),
-    const Center(child: Text('Settings', style: TextStyle(fontSize: 100))),
+  final List<String> _pages = [
+    '/',
+      '/eventScreen',
+    '/classroomSplashScreen',
+    '/settingsScreen'
   ];
 
   @override
   void initState() {
     super.initState();
     _sst.initSpeech();
+    setState(() {
+      _currentIndex = widget.index;
+    });
   }
 
   @override
@@ -116,8 +119,8 @@ class _MainFooterState extends State<MainFooter> {
                     Expanded(child: _buildNavItem(Icons.event, 'Events', 1)),
                     const Spacer(), // Adds flexible space in between
                     Expanded(
-                        child: _buildNavItem(Icons.stars_sharp, 'Classroom', 3)),
-                    Expanded(child: _buildNavItem(Icons.settings, 'Settings', 4)),
+                        child: _buildNavItem(Icons.stars_sharp, 'Classroom', 2)),
+                    Expanded(child: _buildNavItem(Icons.settings, 'Settings', 3)),
                   ],
                 ),
               ),
@@ -213,7 +216,7 @@ class _MainFooterState extends State<MainFooter> {
     return GestureDetector(
       onTap: () {
         setState(() {
-          _currentIndex = index;
+          Navigator.pushNamed(context, _pages[index]);
         });
       },
       child: Column(

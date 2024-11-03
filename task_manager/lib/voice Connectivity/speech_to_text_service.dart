@@ -15,9 +15,7 @@ class SpeechToTextService {
 
   Future<void> startListening(Function(SpeechRecognitionResult) callBackFunction) async {
     if (_speechEnabled) {
-      print("Started Listening");
       await _speechToText.listen(onResult: (result) {
-        print("Recognized: ${result.recognizedWords} (Final: ${result.finalResult})");
         callBackFunction(result);
       });
     } else {
@@ -27,7 +25,6 @@ class SpeechToTextService {
 
   Future<void> stopListening(Function() onStop) async {
     if (_speechEnabled && _speechToText.isListening) {
-      print("Stopped Listening");
       await _speechToText.stop();
       onStop();
     } else {

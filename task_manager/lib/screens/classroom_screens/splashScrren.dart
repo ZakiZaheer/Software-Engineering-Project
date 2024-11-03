@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:task_manager/customWidgets/footer.dart';
 
-class EventScreen extends StatelessWidget {
-  const EventScreen({super.key});
+class SplashScreen extends StatelessWidget {
+  const SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar:const MainFooter(index: 1,),
+      bottomNavigationBar:const MainFooter(index: 2,),
     );
   }
 }
