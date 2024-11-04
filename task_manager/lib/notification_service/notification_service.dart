@@ -147,18 +147,58 @@ class NotificationService {
       }
     }
   }
+  // static Future<void> instantAlarmNotification(
+  //     String title,
+  //     String body,
+  //     ) async {
+  //   final Int64List vibrationPattern = Int64List(4);
+  //   vibrationPattern[0] = 0;
+  //   vibrationPattern[1] = 1000;
+  //   vibrationPattern[2] = 5000;
+  //   vibrationPattern[3] = 2000;
+  //   NotificationDetails notificationDetails = NotificationDetails(
+  //     android: AndroidNotificationDetails(
+  //       'BeBetter_insvoice', // Channel ID
+  //       'taskManager_insvoice', // Channel name
+  //       importance: Importance.high,
+  //       priority: Priority.high,
+  //       enableVibration:true,
+  //       playSound: true,
+  //       sound: const RawResourceAndroidNotificationSound('b'),
+  //       vibrationPattern: vibrationPattern,
+  //
+  //     ),
+  //     iOS: DarwinNotificationDetails(),
+  //   );
+  //
+  //   await notificationsPlugin.show(
+  //     0, // Notification ID (can be any integer)
+  //     title, // Notification title
+  //     body, // Notification body
+  //     notificationDetails,
+  //     payload: title, // Optional payload to send with the notification
+  //   );
+  // }
+
 
   static Future<void> instantNotification(
     String title,
     String body,
   ) async {
-    const NotificationDetails notificationDetails = NotificationDetails(
+    final Int64List vibrationPattern = Int64List(4);
+    vibrationPattern[0] = 0;
+    vibrationPattern[1] = 1000;
+    vibrationPattern[2] = 5000;
+    vibrationPattern[3] = 2000;
+    NotificationDetails notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
         'BeBetter_voice', // Channel ID
         'taskManager_voice', // Channel name
         importance: Importance.high,
         priority: Priority.high,
         enableVibration:true,
+        playSound: true,
+        vibrationPattern: vibrationPattern,
       ),
       iOS: DarwinNotificationDetails(),
     );

@@ -19,7 +19,6 @@ import 'model/task_modal.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await NotificationService.initNotification();
   await WorkManagerService.initialize();
   tz.initializeTimeZones();
@@ -43,17 +42,6 @@ class MyApp extends StatelessWidget {
         '/classroomSplashScreen' : (context) => const SplashScreen(),
         '/settingsScreen' : (context) => const SettingScreen(),
       },
-      // home: Scaffold(
-      //   body: Center(
-      //     child: ElevatedButton(
-      //       onPressed: () {
-      //         DateTime scheduledTime = DateTime.now().add(Duration(seconds: 5));
-      //         NotificationService.scheduleNotification('ScheduledNotif', 'AHHAHAHAHA', scheduledTime);
-      //       },
-      //       child: Text("Schedule Notification"),
-      //     ),
-      //   ),
-      // ),
     );
   }
 }

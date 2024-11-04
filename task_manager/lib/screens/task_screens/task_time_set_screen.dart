@@ -24,6 +24,12 @@ class _TaskDateTimeSelectionScreenState
     extends State<TaskDateTimeSelectionScreen> {
 
   String _reminderType = "Default";
+
+  @override
+  void initState() {
+    _reminderType = widget.task.reminders != null ? widget.task.reminders![0].reminderType : "Default";
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
