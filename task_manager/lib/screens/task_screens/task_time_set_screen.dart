@@ -114,13 +114,11 @@ class _SetDateTimeScreenState extends State<SetDateTimeScreen> {
       builder: (context) => CustomDatePicker(),
     );
 
-    if (pickedDate != null) {
-      setState(() {
-        selectedDate =
-            "${pickedDate.day} ${_getMonthName(pickedDate.month)} ${pickedDate.year}";
-      });
+    setState(() {
+      selectedDate =
+          "${pickedDate.day} ${_getMonthName(pickedDate.month)} ${pickedDate.year}";
+    });
     }
-  }
 
   void _selectTime() async {
     String? pickedTime = await showModalBottomSheet<String>(
@@ -128,12 +126,10 @@ class _SetDateTimeScreenState extends State<SetDateTimeScreen> {
       builder: (context) => CustomTimePicker(),
     );
 
-    if (pickedTime != null) {
-      setState(() {
-        selectedTime = pickedTime;
-      });
+    setState(() {
+      selectedTime = pickedTime;
+    });
     }
-  }
 
   String _getMonthName(int month) {
     const monthNames = [
