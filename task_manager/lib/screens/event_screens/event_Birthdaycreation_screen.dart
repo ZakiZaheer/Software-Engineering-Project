@@ -2,44 +2,27 @@ import 'package:flutter/material.dart';
 import 'customWidgets/input_field.dart';
 import 'customWidgets/alarm_tile.dart';
 import 'screens/event_screens/event_anniversarycreation_screen.dart';
-import 'screens/event_screens/event_Birthdaycreation_screen.dart';
+import 'screens/event_screens/event_creation_screen.dart';
 import 'customWidgets/date_time_picker.dart';
-import 'screens/event_screens/event_repeat_screen.dart';
-import 'screens/task_screens/task_stop_repeat_screen.dart';
-import 'screens/event_screens/event_reminder.dart';
 import 'package:intl/intl.dart';
-void main() => runApp(EventApp());
+import 'screens/event_screens/event_reminder.dart';
 
-class EventApp extends StatelessWidget {
+class BirthdayEventScreen extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: AddEventScreen(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
+  _BirthdayEventScreenState createState() => _BirthdayEventScreenState();
 }
 
-class AddEventScreen extends StatefulWidget {
-  @override
-  _AddEventScreenState createState() => _AddEventScreenState();
-}
-
-class _AddEventScreenState extends State<AddEventScreen> {
-  bool isAllDay = false;
+class _BirthdayEventScreenState extends State<BirthdayEventScreen> {
+  bool issmartsuggestion = false;
   bool isAlarmOn = false;
-  String selectedRepeatOption = "Never";
-  String selectedStopRepeatOption = "Never";
-  String reminderOptions = "5 minutes before the event";
-
   DateTime selectedFromDate = DateTime.now();
-  DateTime selectedToDate = DateTime.now().add(Duration(hours: 1));
   final DateFormat dateFormat = DateFormat("E, d MMM, yyyy hh:mm a");
+  String reminderOptions = "5 minutes before the event";
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF0A1A2A),
+      backgroundColor: Color(0xFF0A1A2A), // Dark background color
       appBar: AppBar(
         backgroundColor: Color(0xFF0A1329),
         elevation: 0,
@@ -47,7 +30,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
           icon: Icon(Icons.close, color: Colors.white),
           onPressed: () {},
         ),
-        title: Text("Add Event", style: TextStyle(color: Colors.white)),
+        title: Text("Add Birthday", style: TextStyle(color: Colors.white)),
         actions: [
           TextButton(
             onPressed: () {},
@@ -70,17 +53,16 @@ class _AddEventScreenState extends State<AddEventScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildEventTypeIcon(Icons.event, "Event", true),
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => BirthdayEventScreen()),
+                      MaterialPageRoute(builder: (context) => AddEventScreen()),
                     );
                   },
-                  child: _buildEventTypeIcon(Icons.cake, "Birthday", false),
+                  child: _buildEventTypeIcon(Icons.event, "Event", false),
                 ),
+                _buildEventTypeIcon(Icons.cake, "Birthday", true),
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -94,13 +76,8 @@ class _AddEventScreenState extends State<AddEventScreen> {
               ],
             ),
             SizedBox(height: 20),
-            buildTextField("Event Name"),
+            buildTextField("Name"),
             SizedBox(height: 20),
-            _buildSwitchTile("All Day", isAllDay, (value) {
-              setState(() {
-                isAllDay = value;
-              });
-            }),
             GestureDetector(
               onTap: () async {
                 DateTime? pickedDate = await showCustomDateTimePicker(
@@ -114,38 +91,29 @@ class _AddEventScreenState extends State<AddEventScreen> {
                 }
               },
               child: _buildDateTimePicker(
-                "From",
+                "When",
                 dateFormat.format(selectedFromDate),
               ),
             ),
-            GestureDetector(
-              onTap: () async {
-                DateTime? pickedDate = await showCustomDateTimePicker(
-                  context: context,
-                  title: 'To',
-                );
-                if (pickedDate != null) {
-                  setState(() {
-                    selectedToDate = pickedDate;
-                  });
-                }
-              },
-              child: _buildDateTimePicker(
-                "To",
-                dateFormat.format(selectedToDate),
-              ),
-            ),
-            buildListTile('Repeat', selectedRepeatOption, context,
-                _navigateToRepeatScreen),
-            buildListTile('Stop repeating after', selectedStopRepeatOption,
-                context, _navigateToStopRepeatingAfterScreen),
             buildListTile('Reminders', reminderOptions, context,
                 _navigateToRemindersScreen),
             buildAlarmTile(),
             SizedBox(height: 20),
-            buildTextField("Location"),
-            SizedBox(height: 20),
-            buildTextField("Description"),
+            Container(
+              height: 2, // Height of the line
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.white, Colors.transparent],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+              ),
+            ),
+            _buildSwitchTile("Smart Suggestion", issmartsuggestion, (value) {
+              setState(() {
+                issmartsuggestion = value;
+              });
+            }),
           ],
         ),
       ),
@@ -186,6 +154,24 @@ class _AddEventScreenState extends State<AddEventScreen> {
     );
   }
 
+  Widget _buildDateTimePicker(String label, String date) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(color: Colors.white)),
+          Row(
+            children: [
+              Text(date, style: TextStyle(color: Colors.white70)),
+              Icon(Icons.chevron_right, color: Colors.white70),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget buildListTile(String title, String value, BuildContext context,
       [VoidCallback? onTap]) {
     return ListTile(
@@ -208,38 +194,6 @@ class _AddEventScreenState extends State<AddEventScreen> {
     );
   }
 
-  void _navigateToRepeatScreen() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => RepeatScreen(
-          onSave: (selectedOption) {
-            setState(() {
-              selectedRepeatOption = selectedOption;
-            });
-          },
-        ),
-      ),
-    );
-  }
-
-  void _navigateToStopRepeatingAfterScreen() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => StopRepeatScreen(
-          onOptionSelected: (String selectedOption, [int? countValue]) {
-            setState(() {
-              selectedStopRepeatOption = countValue != null
-                  ? "$selectedOption after $countValue times"
-                  : selectedOption;
-            });
-          },
-        ),
-      ),
-    );
-  }
-
   void _navigateToRemindersScreen() {
     Navigator.push(
       context,
@@ -252,22 +206,6 @@ class _AddEventScreenState extends State<AddEventScreen> {
       ),
     );
   }
-
-  Widget _buildDateTimePicker(String label, String date) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: TextStyle(color: Colors.white)),
-          Row(
-            children: [
-              Text(date, style: TextStyle(color: Colors.white70)),
-              Icon(Icons.chevron_right, color: Colors.white70),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 }
+
+

@@ -300,7 +300,7 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
     });
   }
 
-  Widget _buildTextField(String label, {bool isDropdown = false}) {
+  Widget _buildTextField(String label) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
