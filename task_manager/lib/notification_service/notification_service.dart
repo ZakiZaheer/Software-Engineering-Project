@@ -2,8 +2,8 @@ import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
-import 'package:task_manager/model/taskReminder_modal.dart';
-import 'package:task_manager/model/task_modal.dart';
+import 'package:task_manager/model/task/taskReminder_modal.dart';
+import 'package:task_manager/model/task/task_modal.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {

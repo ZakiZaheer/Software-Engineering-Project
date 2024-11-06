@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:task_manager/model/subTask_modal.dart';
-import 'package:task_manager/model/taskReminder_modal.dart';
-import 'package:task_manager/model/taskRepetition_modal.dart';
+import 'package:task_manager/model/task/subTask_modal.dart';
+import 'package:task_manager/model/task/taskReminder_modal.dart';
+import 'package:task_manager/model/task/taskRepetition_modal.dart';
 import 'package:task_manager/notification_service/notification_service.dart';
 import 'package:task_manager/notification_service/work_manger_service.dart';
-import '../model/task_modal.dart';
+import '../model/task/task_modal.dart';
 
 class SqfLiteService {
   static final _instance = SqfLiteService._internal();
@@ -24,7 +24,7 @@ class SqfLiteService {
   }
 
   Future<Database> _initDB() async {
-    final path = join(await getDatabasesPath(), 'TaskManager4.db');
+    final path = join(await getDatabasesPath(), 'TaskManager5.db');
     return openDatabase(path, version: 1, onCreate: _createDB);
   }
 
@@ -36,7 +36,7 @@ class SqfLiteService {
     ''');
 
     await db.execute('''
-      CREATE TABLE task (
+      CREATE TABLE task(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           title TEXT NOT NULL,
           status INTEGER NOT NULL,
@@ -58,7 +58,7 @@ class SqfLiteService {
           repeat_until DATE,
           num_occurrence INTEGER,
           PRIMARY KEY(task_id),
-          FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE ON UPDATE CASCADE
+          FOREIGN KEY (task_id) REFERENCES task(id) ON DELETE CASCADE ON UPDATE CASCADE
       )
     ''');
 
@@ -68,7 +68,7 @@ class SqfLiteService {
         status INTEGER NOT NULL,
         task_id INTEGER,
         PRIMARY KEY(title,task_id),
-        FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE ON UPDATE CASCADE
+        FOREIGN KEY (task_id) REFERENCES task(id) ON DELETE CASCADE ON UPDATE CASCADE
       )
     ''');
 
@@ -79,7 +79,46 @@ class SqfLiteService {
         reminder_unit TEXT,
         reminder_type TEXT NOT NULL,
         PRIMARY KEY(reminder_interval,reminder_unit,task_id),
-        FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE ON UPDATE CASCADE
+        FOREIGN KEY (task_id) REFERENCES task(id) ON DELETE CASCADE ON UPDATE CASCADE
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE event (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT,
+        date DATE NOT NULL,
+        start_time TIME NOT NULL,
+        end_time TIME NOT NULL,
+        category TEXT NOT NULL,
+        location TEXT,
+        is_smart_suggested INTEGER NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE event_reminder(
+        event_id INTEGER,
+        reminder_interval INTEGER,
+        reminder_unit TEXT,
+        reminder_type TEXT NOT NULL,
+        PRIMARY KEY(reminder_interval,reminder_unit,event_id),
+        FOREIGN KEY (event_id) REFERENCES event(id) ON DELETE CASCADE ON UPDATE CASCADE
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE event_repetition(
+          event_id INTEGER,
+          repeat_interval INTEGER NOT NULL,
+          repeat_unit TEXT NOT NULL,
+          repeat_type TEXT NOT NULL,
+          repeat_until DATE,
+          num_occurrence INTEGER,
+          repeat_on TEXT,
+          PRIMARY KEY(event_id),
+          FOREIGN KEY (event_id) REFERENCES event(id) ON DELETE CASCADE ON UPDATE CASCADE
       )
     ''');
     await db.insert('category', {"name": "To-Do"});
@@ -131,28 +170,23 @@ class SqfLiteService {
         task.reminders![i].taskId = taskId;
         await insertTaskReminder(task.reminders![i]);
       }
-      if(task.reminders![0].reminderType == "Voice"){
+      if (task.reminders![0].reminderType == "Voice") {
         await WorkManagerService.scheduleTaskVoiceNotification(task);
-      }
-      else if(task.reminders![0].reminderType == "Alarm"){
+      } else if (task.reminders![0].reminderType == "Alarm") {
         await NotificationService.scheduleTaskAlarmReminder(task);
-      }
-      else{
+      } else {
         await NotificationService.scheduleTaskDefaultReminder(task);
       }
     }
-
-
   }
 
   Future<List<Task>> getTasks(String category) async {
     //Further Optimize
     final db = await database;
-    String curDate =formatDate(DateTime.now());
+    String curDate = formatDate(DateTime.now());
     String curTime =
         "${TimeOfDay.now().hour.toString().padLeft(2, '0')}:${TimeOfDay.now().minute.toString().padLeft(2, '0')}";
-    List<Map<String, dynamic>> map = await db.query(
-        'task',
+    List<Map<String, dynamic>> map = await db.query('task',
         where: '''
     category = ? 
     AND status = ? 
@@ -161,8 +195,7 @@ class SqfLiteService {
          OR (date = ? AND (time IS NULL OR time >= ?)))
   ''',
         whereArgs: [category, 0, curDate, curDate, curTime],
-        orderBy: 'priority DESC, date'
-    );
+        orderBy: 'priority DESC, date');
 
     List<Task> tasks = List.generate(map.length, (index) {
       Task task = Task.fromMap(map[index]);
@@ -233,13 +266,12 @@ class SqfLiteService {
   Future<void> deleteTask(Task task) async {
     final db = await database;
     await db.delete('task', where: 'id = ?', whereArgs: [task.id!]);
-    if(task.reminders != null){
-        if(task.reminders![0].reminderType == "Voice"){
-          await WorkManagerService.cancelTaskVoiceNotification(task);
-        }
-        else{
-          await NotificationService.cancelTaskReminders(task);
-        }
+    if (task.reminders != null) {
+      if (task.reminders![0].reminderType == "Voice") {
+        await WorkManagerService.cancelTaskVoiceNotification(task);
+      } else {
+        await NotificationService.cancelTaskReminders(task);
+      }
     }
   }
 
@@ -267,17 +299,14 @@ class SqfLiteService {
         task.reminders![i].taskId = task.id!;
         await insertTaskReminder(task.reminders![i]);
       }
-      if(task.reminders![0].reminderType == "Voice"){
+      if (task.reminders![0].reminderType == "Voice") {
         await WorkManagerService.scheduleTaskVoiceNotification(task);
-      }
-      else if(task.reminders![0].reminderType == "Alarm"){
+      } else if (task.reminders![0].reminderType == "Alarm") {
         await NotificationService.scheduleTaskAlarmReminder(task);
-      }
-      else{
+      } else {
         NotificationService.scheduleTaskDefaultReminder(task);
       }
     }
-
   }
 
   Future<void> updateTaskStatus(Task task) async {
@@ -291,88 +320,82 @@ class SqfLiteService {
       await db.update('sub_task', {"status": status},
           where: "task_id = ?", whereArgs: [task.id!]);
     }
-    if(task.reminders != null){
-      if(status == 1){
-        if(task.reminders![0].reminderType == "Voice"){
+    if (task.reminders != null) {
+      if (status == 1) {
+        if (task.reminders![0].reminderType == "Voice") {
           await WorkManagerService.cancelTaskVoiceNotification(task);
-        }
-        else{
+        } else {
           await NotificationService.cancelTaskReminders(task);
         }
-
-      }
-      else{
-        if(task.reminders![0].reminderType == "Voice"){
+      } else {
+        if (task.reminders![0].reminderType == "Voice") {
           await WorkManagerService.scheduleTaskVoiceNotification(task);
-        }
-        else if(task.reminders![0].reminderType == "Alarm") {
+        } else if (task.reminders![0].reminderType == "Alarm") {
           await NotificationService.scheduleTaskAlarmReminder(task);
-        }
-        else{
+        } else {
           await NotificationService.scheduleTaskDefaultReminder(task);
         }
       }
     }
-
-
 
     if (task.repeatPattern != null) {
       await insertRepeatedTask(task);
     }
   }
 
-  Future<void> insertRepeatedTask(Task parentTask)async{
+  Future<void> insertRepeatedTask(Task parentTask) async {
     Task task = Task(
-      title: parentTask.title,
-      description: parentTask.description,
-      priority: parentTask.priority,
-      category: parentTask.category,
-      date: parentTask.date,
-      time: parentTask.time,
-      repeatPattern: parentTask.repeatPattern,
-      reminders: parentTask.reminders,
-      subTasks: parentTask.subTasks
-    );
+        title: parentTask.title,
+        description: parentTask.description,
+        priority: parentTask.priority,
+        category: parentTask.category,
+        date: parentTask.date,
+        time: parentTask.time,
+        repeatPattern: parentTask.repeatPattern,
+        reminders: parentTask.reminders,
+        subTasks: parentTask.subTasks);
     await deleteTaskRepetition(parentTask.id!);
-    if(task.subTasks != null){
-      for(SubTask subTask in task.subTasks!){
-        subTask.status =false;
+    if (task.subTasks != null) {
+      for (SubTask subTask in task.subTasks!) {
+        subTask.status = false;
       }
     }
     DateTime taskDate = DateTime.parse(task.date!);
-    if (task.time != null){
+    if (task.time != null) {
       final splitTime = task.time!.split(":");
-      taskDate = taskDate.add(Duration(hours: int.parse(splitTime[0]) , minutes: int.parse(splitTime[1])));
+      taskDate = taskDate.add(Duration(
+          hours: int.parse(splitTime[0]), minutes: int.parse(splitTime[1])));
     }
     taskDate = _addTaskTime(taskDate, task.repeatPattern!);
     if (task.repeatPattern!.repeatType == "Count") {
       task.repeatPattern!.numOccurrence =
           task.repeatPattern!.numOccurrence! - 1;
-      if(task.repeatPattern!.numOccurrence != 0){
-        if(task.repeatPattern!.repeatUnit == "Hour"){
-            task.time = "${taskDate.hour.toString().padLeft(2,"0")}:${taskDate.minute.toString().padLeft(2,"0")}";
+      if (task.repeatPattern!.numOccurrence != 0) {
+        if (task.repeatPattern!.repeatUnit == "Hour") {
+          task.time =
+              "${taskDate.hour.toString().padLeft(2, "0")}:${taskDate.minute.toString().padLeft(2, "0")}";
         }
         task.date = formatDate(taskDate);
         print("Parent Task $parentTask");
         print("newTask $task");
         await insertTask(task);
       }
-    }
-    else if (task.repeatPattern!.repeatType == "Time") {
+    } else if (task.repeatPattern!.repeatType == "Time") {
       final splitStopDate = task.repeatPattern!.repeatUntil!.split("-");
       final stopDate = DateTime.parse(task.date!);
 
       if (taskDate.isBefore(stopDate)) {
-        if(task.repeatPattern!.repeatUnit == "Hour"){
-          task.time = "${taskDate.hour.toString().padLeft(2,"0")}:${taskDate.minute.toString().padLeft(2,"0")}";
+        if (task.repeatPattern!.repeatUnit == "Hour") {
+          task.time =
+              "${taskDate.hour.toString().padLeft(2, "0")}:${taskDate.minute.toString().padLeft(2, "0")}";
         }
         task.date = formatDate(taskDate);
         await insertTask(task);
       }
-    }
-    else {
-      if(task.repeatPattern!.repeatUnit == "Hour"){
-        task.time = "${taskDate.hour.toString().padLeft(2,"0")}:${taskDate.minute.toString().padLeft(2,"0")}";
+    } else {
+      if (task.repeatPattern!.repeatUnit == "Hour") {
+        task.time =
+            "${taskDate.hour.toString().padLeft(2, "0")}:${taskDate.minute.toString().padLeft(2, "0")}";
       }
       task.date = formatDate(taskDate);
       await insertTask(task);
@@ -478,20 +501,13 @@ DateTime _addTaskTime(DateTime taskTime, TaskRepetition repeatPattern) {
   } else if (repeatPattern.repeatUnit == "Week") {
     return taskTime.add(Duration(days: repeatPattern.repeatInterval * 7));
   } else if (repeatPattern.repeatUnit == "Month") {
-    return DateTime(
-      taskTime.year,
-      taskTime.month + repeatPattern.repeatInterval,
-      taskTime.day
-    );
-  } else{
-    return DateTime(
-        taskTime.year + repeatPattern.repeatInterval,
-        taskTime.month,
-        taskTime.day
-    );  }
-
+    return DateTime(taskTime.year,
+        taskTime.month + repeatPattern.repeatInterval, taskTime.day);
+  } else {
+    return DateTime(taskTime.year + repeatPattern.repeatInterval,
+        taskTime.month, taskTime.day);
+  }
 }
-
 
 String formatDate(DateTime date) {
   return DateFormat('yyyy-MM-dd').format(date);

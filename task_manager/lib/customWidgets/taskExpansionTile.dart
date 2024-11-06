@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:task_manager/customWidgets/TaskTile.dart';
 
-import '../model/subTask_modal.dart';
-import '../model/task_modal.dart';
+import '../model/task/subTask_modal.dart';
+import '../model/task/task_modal.dart';
 
 class TaskExpansionTile extends StatefulWidget {
   final String title;

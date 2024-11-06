@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:task_manager/customWidgets/custom_picker.dart';
 import 'package:task_manager/Custom_Fonts.dart';
-import 'package:task_manager/model/taskReminder_modal.dart';
+import 'package:task_manager/model/task/taskReminder_modal.dart';
 
 import '../../customWidgets/GraadientCheckBox.dart';
 

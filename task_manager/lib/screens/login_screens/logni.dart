@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'login.dart';
+import 'package:task_manager/screens/login_screens/login.dart';
 import'forgot_pass.dart';
 
 void main(){
@@ -61,7 +61,7 @@ class _loginPageState extends State<loginPage>{
                 SizedBox(height: 16),
                 Text("Password"),
                 _passWord("Password"),
-                
+
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(

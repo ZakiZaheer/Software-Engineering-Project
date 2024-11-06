@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:intl/intl.dart';
 import 'package:workmanager/workmanager.dart';
-import '../model/task_modal.dart';
+import '../model/task/task_modal.dart';
 import 'notification_service.dart';
 
 

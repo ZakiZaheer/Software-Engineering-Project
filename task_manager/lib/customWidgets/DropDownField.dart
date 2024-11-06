@@ -116,10 +116,6 @@ class _DropDownFieldState extends State<DropDownField> {
               _selectedItem = newCategory;
             });
           }),
-    ).then((data) {
-      setState(() {
-        _selectedItem = null;
-      });
-    });
+    );
   }
 }

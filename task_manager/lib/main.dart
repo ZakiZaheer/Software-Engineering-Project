@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:task_manager/model/taskReminder_modal.dart';
-import 'package:task_manager/model/taskRepetition_modal.dart';
+import 'package:task_manager/model/task/taskReminder_modal.dart';
+import 'package:task_manager/model/task/taskRepetition_modal.dart';
 import 'package:task_manager/notification_service/notification_service.dart';
 import 'package:task_manager/notification_service/work_manger_service.dart';
-import 'package:task_manager/screens/classroom_screens/splashScrren.dart';
+import 'package:task_manager/screens/login_screens/splashScrren.dart';
 import 'package:task_manager/screens/event_screens/daily_event_view.dart';
 import 'package:task_manager/screens/setting_screens/setting_screen.dart';
 import 'package:task_manager/screens/task_screens/task_creation_screen.dart';
@@ -15,7 +15,7 @@ import 'package:task_manager/screens/task_screens/task_stop_repeat_screen.dart';
 import 'package:task_manager/screens/task_screens/task_time_set_screen.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
-import 'model/task_modal.dart';
+import 'model/task/task_modal.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

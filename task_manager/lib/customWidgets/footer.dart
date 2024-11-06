@@ -154,7 +154,11 @@ class _MainFooterState extends State<MainFooter> {
               hold = false;
               _sizeFactor = 0;
               await _sst.stopListening(() {
-                _micController.text = ""; // Uncomment to clear after stopping
+                setState(() {
+                  hold = false;
+                  _sizeFactor = 0;
+                  _micController.text = "";
+                });
               });
               setState(() {
               });
@@ -163,7 +167,11 @@ class _MainFooterState extends State<MainFooter> {
               hold = false;
               _sizeFactor = 0;
               await _sst.stopListening(() {
-                  _micController.text = ""; // Uncomment to clear after stopping
+                setState(() {
+                  hold = false;
+                  _sizeFactor = 0;
+                  _micController.text = "";
+                });// Uncomment to clear after stopping
               });
               setState(() {
               });

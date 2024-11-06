@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../model/task_modal.dart';
+import '../model/task/task_modal.dart';
 
 class TaskDescription extends StatelessWidget {
   final Task task;
@@ -68,8 +68,9 @@ class TaskDescription extends StatelessWidget {
                         // Space between title and details
                         if(task.date!=null)...[
                         Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
-                            const Icon(Icons.timer),
+                            const Icon(Icons.timer , size: 16,),
                             Text(
                               " ${_formatDate(task.date!)}, ",
                               style: const TextStyle(
@@ -90,7 +91,7 @@ class TaskDescription extends StatelessWidget {
                             if (task.repeatPattern != null)
                               Wrap(
                                 children: [
-                                  const Icon(Icons.repeat),
+                                  const Icon(Icons.repeat, size: 16,),
                                   Text(
                                     " Every ${task.repeatPattern!.repeatInterval} ${task.repeatPattern!.repeatUnit}",
                                     style: const TextStyle(

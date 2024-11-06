@@ -5,10 +5,10 @@ import 'package:task_manager/customWidgets/SelectionField.dart';
 import 'package:task_manager/customWidgets/date_picker.dart';
 import 'package:task_manager/customWidgets/time_picker.dart';
 import 'package:task_manager/customWidgets/alert_slider.dart';
-import 'package:task_manager/model/taskReminder_modal.dart';
-import 'package:task_manager/model/taskRepetition_modal.dart';
+import 'package:task_manager/model/task/taskReminder_modal.dart';
+import 'package:task_manager/model/task/taskRepetition_modal.dart';
 import 'package:task_manager/Custom_Fonts.dart';
-import '../../model/task_modal.dart';
+import '../../model/task/task_modal.dart';
 
 class TaskDateTimeSelectionScreen extends StatefulWidget {
   final Task task;
@@ -77,6 +77,7 @@ class _TaskDateTimeSelectionScreenState
             SelectionField(
               title: "Date",
               initialValue:widget.task.date != null ? formatDate(widget.task.date!)  : "none",
+              isActive :true,
               onTap: () async {
                 String? pickedDate = await showModalBottomSheet<String>(
                   context: context,
@@ -111,8 +112,8 @@ class _TaskDateTimeSelectionScreenState
             SelectionField(
                 title: "Time",
                 initialValue: widget.task.time != null ? formatTime(widget.task.time!) : "none",
-                onTap: widget.task.date != null
-                    ? () async {
+                isActive :widget.task.date != null,
+                onTap: () async {
                         String? pickedTime = await showModalBottomSheet<String>(
                           context: context,
                           builder: (context) => CustomTimePicker(
@@ -150,14 +151,14 @@ class _TaskDateTimeSelectionScreenState
                         }
                         return pickedTime;
                       }
-                    : null),
+                    ),
             SelectionField(
               title: "Repeat",
               initialValue: widget.task.repeatPattern != null
                   ? "Every ${widget.task.repeatPattern!.repeatInterval} ${widget.task.repeatPattern!.repeatUnit}"
                   : "Never",
-              onTap: widget.task.date != null
-                  ? () async {
+              isActive :widget.task.date != null,
+              onTap:() async {
                       final repeatPattern = await Navigator.pushNamed(
                         context,
                         '/taskRepeatScreen',
@@ -189,13 +190,13 @@ class _TaskDateTimeSelectionScreenState
                           ? "Every ${widget.task.repeatPattern!.repeatInterval} ${widget.task.repeatPattern!.repeatUnit}"
                           : "Never";
                     }
-                  : null,
+                  ,
             ),
             SelectionField(
               title: "Stop Repeating After",
               initialValue: widget.task.repeatPattern != null ? _checkRepeatType(widget.task.repeatPattern!) : "Never",
-              onTap: widget.task.repeatPattern != null
-                  ? () async {
+              isActive :widget.task.repeatPattern != null,
+              onTap: () async {
                       final data = await Navigator.pushNamed(context, '/taskRepeatUntilScreen', arguments: widget.task.repeatPattern) as List?;
                         if (data != null) {
                           if (data[1] == "Never") {
@@ -224,13 +225,14 @@ class _TaskDateTimeSelectionScreenState
                         }
 
                     }
-                  : null,
+                  ,
             ),
             const Divider(color: Colors.grey),
             SelectionField(
               title: "Reminders",
               initialValue: widget.task.reminders != null ? "Active" : "Disabled",
-              onTap: widget.task.date != null ? () async {
+              isActive :widget.task.date != null,
+              onTap: () async {
                 final reminderList = await Navigator.pushNamed(context, '/taskRemindersScreen' , arguments: widget.task.reminders);
                 if(reminderList != null){
                   final newRemindersList = reminderList as List<TaskReminder>;
@@ -243,7 +245,7 @@ class _TaskDateTimeSelectionScreenState
                   widget.task.reminders = null;
                   return "Disabled";
                 }
-              } : null,
+              },
             ),
             buildAlarmTile(),
           ],
@@ -265,7 +267,7 @@ class _TaskDateTimeSelectionScreenState
         children: [
           Text(
             'Alarm',
-            style: TimeLeftContent(),
+            style: timeLeftContent(),
           ),
           CustomSlider(
             onValueChanged: (value) {
@@ -284,7 +286,7 @@ class _TaskDateTimeSelectionScreenState
           ),
           Text(
             'Voice',
-            style: TimeLeftContent(),
+            style: timeLeftContent(),
           ),
         ],
       ),

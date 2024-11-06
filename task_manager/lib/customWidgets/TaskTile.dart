@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:task_manager/model/subTask_modal.dart';
-import 'package:task_manager/notification_service/notification_service.dart';
-import '../model/task_modal.dart';
+import 'package:task_manager/model/task/subTask_modal.dart';
+import '../model/task/task_modal.dart';
 
 class TaskTile extends StatefulWidget {
   final Task task;
@@ -105,8 +104,9 @@ class _TaskTileState extends State<TaskTile> {
                     ),
                     if (widget.task.date != null)
                       Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          const Icon(Icons.timer),
+                          const Icon(Icons.timer , size: 16,),
                           Text(
                             " ${_formatDate(widget.task.date!)}, ",
                             style: const TextStyle(
@@ -125,7 +125,7 @@ class _TaskTileState extends State<TaskTile> {
                             ),
                           if (widget.task.repeatPattern != null) Wrap(
                             children: [
-                              const Icon(Icons.repeat),
+                              const Icon(Icons.repeat, size: 16,),
                               Text(
                                 " Every ${widget.task.repeatPattern!.repeatInterval} ${widget.task.repeatPattern!.repeatUnit}",
                                 style: const TextStyle(
@@ -169,9 +169,23 @@ class _TaskTileState extends State<TaskTile> {
             ...List.generate(widget.task.subTasks!.length, (index) {
               return SubTaskTile(
                 subTask: widget.task.subTasks![index],
-                onChecked: (subTask) {
-                  widget.onSubTaskChecked(subTask);
-                  setState(() {});
+                onChecked: (subTask)async {
+                  subTask.status = !subTask.status;
+                  bool isCompleted = true;
+                  for(SubTask subTask in widget.task.subTasks!){
+                    if(subTask.status == false){
+                      isCompleted =false;
+                      break;
+                    }
+                  }
+                  if(isCompleted){
+                    await widget.onChecked(widget.task);
+                  }
+                  else{
+                    subTask.status = !subTask.status;
+                    await widget.onSubTaskChecked(subTask);
+                    setState(() {});
+                  }
                 },
               );
             }),

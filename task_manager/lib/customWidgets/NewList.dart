@@ -64,7 +64,7 @@ class CategoryDialog extends StatelessWidget {
                     onPressed: () async {
                       try {
                         await onSaved(listController.text);
-                        Navigator.pop(context);
+                        Navigator.pop(context , listController.text);
                       } catch (e) {
                         Navigator.pop(context);
                         showDialog(

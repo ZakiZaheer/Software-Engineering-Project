@@ -1,17 +1,12 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:task_manager/customWidgets/TaskAlert.dart';
 import 'package:task_manager/customWidgets/TaskTile.dart';
 import 'package:task_manager/customWidgets/Taskdiscription.dart';
 import 'package:task_manager/customWidgets/footer.dart';
 import 'package:task_manager/customWidgets/taskExpansionTile.dart';
-import 'package:task_manager/notification_service/notification_service.dart';
 import 'package:task_manager/customWidgets/NewList.dart';
-import 'package:task_manager/notification_service/work_manger_service.dart';
 import '../../database_service/sqfliteService.dart';
-import '../../model/subTask_modal.dart';
-import '../../model/taskReminder_modal.dart';
-import '../../model/task_modal.dart';
+import '../../model/task/task_modal.dart';
 
 class TaskScreen extends StatefulWidget {
   const TaskScreen({super.key});
@@ -166,7 +161,10 @@ class _TaskScreenState extends State<TaskScreen> {
         onPressed: ()async {
           Navigator.pushNamed(context, '/taskCreationScreen')
               .then((data) async {
-            _currentCategory = data as String;
+                if(data != null){
+                  _currentCategory = data as String;
+                }
+
             await loadTasks();
           });
         },
@@ -343,6 +341,7 @@ class _TaskScreenState extends State<TaskScreen> {
                                 errorText: "List Name Already Taken",
                                 onSaved: (newCategory) async {
                                   await db.addCategory(newCategory);
+                                  _currentCategory = newCategory;
                                   await loadTasks();
                                 });
                           },

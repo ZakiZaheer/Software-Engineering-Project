@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:task_manager/Custom_Fonts.dart';
 import 'package:task_manager/customWidgets/counter.dart';
 import 'package:task_manager/customWidgets/date_picker.dart';
-import 'package:task_manager/model/taskRepetition_modal.dart';
+import 'package:task_manager/model/task/taskRepetition_modal.dart';
 
 import '../../customWidgets/GraadientCheckBox.dart';
 

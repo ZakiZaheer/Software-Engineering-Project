@@ -5,12 +5,12 @@ import 'package:task_manager/customWidgets/ErrorDialog.dart';
 import 'package:task_manager/customWidgets/SubTaskInputField.dart';
 import 'package:task_manager/customWidgets/inputField.dart';
 import 'package:task_manager/database_service/sqfliteService.dart';
-import 'package:task_manager/model/subTask_modal.dart';
+import 'package:task_manager/model/task/subTask_modal.dart';
 import 'package:task_manager/Custom_Fonts.dart';
 import 'package:task_manager/customWidgets/alert_slider.dart';
-import 'package:task_manager/model/taskReminder_modal.dart';
+import 'package:task_manager/model/task/taskReminder_modal.dart';
 import 'package:task_manager/notification_service/notification_service.dart';
-import '../../model/task_modal.dart';
+import '../../model/task/task_modal.dart';
 
 class TaskModificationScreen extends StatefulWidget {
   final Task task;

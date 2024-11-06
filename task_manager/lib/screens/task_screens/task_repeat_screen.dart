@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:task_manager/customWidgets/custom_picker.dart';
 import 'package:task_manager/Custom_Fonts.dart';
-import 'package:task_manager/model/taskRepetition_modal.dart';
+import 'package:task_manager/model/task/taskRepetition_modal.dart';
 import '../../customWidgets/GraadientCheckBox.dart';
-import '../../model/task_modal.dart';
+import '../../model/task/task_modal.dart';
 
 class TaskRepeatScreen extends StatefulWidget {
   final TaskRepetition? repeatPattern;

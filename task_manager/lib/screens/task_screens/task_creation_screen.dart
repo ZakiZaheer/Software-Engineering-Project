@@ -5,10 +5,10 @@ import 'package:task_manager/customWidgets/ErrorDialog.dart';
 import 'package:task_manager/customWidgets/SubTaskInputField.dart';
 import 'package:task_manager/customWidgets/inputField.dart';
 import 'package:task_manager/database_service/sqfliteService.dart';
-import 'package:task_manager/model/subTask_modal.dart';
+import 'package:task_manager/model/task/subTask_modal.dart';
 import 'package:task_manager/Custom_Fonts.dart';
 import 'package:task_manager/customWidgets/alert_slider.dart';
-import '../../model/task_modal.dart';
+import '../../model/task/task_modal.dart';
 
 class TaskCreationScreen extends StatefulWidget {
   const TaskCreationScreen({super.key});
@@ -109,111 +109,114 @@ class _TaskCreationScreenState extends State<TaskCreationScreen> {
           ),
         ),
       ),
-      body: ListView(
-        children: [
-          const SizedBox(height: 16),
-          InputField(
-            label: "New Task",
-            controller: _titleController,
-          ),
-          const SizedBox(height: 16),
-          DropDownField(
-            items: categories,
-            onChanged: (value) {
-              _selectedCategory = value;
-            },
-            onAddItem: (newCategory) async {
-              await db.addCategory(newCategory);
-              await loadCategories();
-            },
-          ),
-          const SizedBox(height: 16),
-          InputField(
-            label: "Description(optional)",
-            controller: _descriptionController,
-          ),
-          const SizedBox(height: 16),
-          CustomAlertSlider(
-            onValueChanged: (value) {
-              _selectedPriority = value.toInt();
-            },
-          ),
-          const SizedBox(height: 16),
-          ListTile(
-            title: const Text('Date/time',
-                style: TextStyle(
-                    fontFamily: 'Roboto',
-                    fontWeight: FontWeight.w400,
-                    fontSize: 18,
-                    color: Colors.white)),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "${task.date != null ? formatDate(task.date!) : "None"}${task.time != null ? " , ${formatTime(task.time!)}" : ""} ",
-                  style: const TextStyle(
-                      fontFamily: 'Roboto',
-                      fontWeight: FontWeight.w300,
-                      fontSize: 13,
-                      color: Colors.grey),
-                ),
-                const Icon(
-                  Icons.arrow_forward_ios_outlined,
-                ),
-              ],
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: ListView(
+          children: [
+            const SizedBox(height: 16),
+            InputField(
+              label: "New Task",
+              controller: _titleController,
             ),
-            onTap: () {
-              Navigator.pushNamed(context, '/taskDateTimeSelectionScreen',
-                      arguments: task)
-                  .then((data) {
-                if (data != null) {
-
-                  Task newTask = data as Task;
-                  print("Recieved Task: $newTask");
-                  task.date = newTask.date;
-                  task.time = newTask.time;
-                  task.repeatPattern = newTask.repeatPattern;
-                  task.reminders = newTask.reminders;
-                  setState(() {});
-                }
-              });
-              // Navigator.push(context, MaterialPageRoute(builder: (context)=> SetDateTimeScreen()));
-            },
-          ),
-          const SizedBox(height: 16),
-          SubTaskInputField(
-            controller: _subTaskController,
-            iconButton: IconButton(
-              onPressed: () {
-                if (_subTaskController.text.isNotEmpty) {
-                  subTasksControllers.add(
-                      TextEditingController(text: _subTaskController.text));
-                  _subTaskController.clear();
-                  setState(() {});
-                }
+            const SizedBox(height: 16),
+            DropDownField(
+              items: categories,
+              onChanged: (value) {
+                _selectedCategory = value;
               },
-              icon: const Icon(Icons.add),
+              onAddItem: (newCategory) async {
+                await db.addCategory(newCategory);
+                await loadCategories();
+              },
             ),
-          ),
-          const SizedBox(height: 16),
-          ...List.generate(subTasksControllers.length, (index) {
-            return Column(
-              children: [
-                SubTaskInputField(
-                  controller: subTasksControllers[index],
-                  iconButton: IconButton(
-                    onPressed: () {
-                      subTasksControllers.removeAt(index);
-                      setState(() {});
-                    },
-                    icon: const Icon(Icons.close),
+            const SizedBox(height: 16),
+            InputField(
+              label: "Description(optional)",
+              controller: _descriptionController,
+            ),
+            const SizedBox(height: 16),
+            CustomAlertSlider(
+              onValueChanged: (value) {
+                _selectedPriority = value.toInt();
+              },
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              title: const Text('Date/time',
+                  style: TextStyle(
+                      fontFamily: 'Roboto',
+                      fontWeight: FontWeight.w400,
+                      fontSize: 18,
+                      color: Colors.white)),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "${task.date != null ? formatDate(task.date!) : "None"}${task.time != null ? " , ${formatTime(task.time!)}" : ""} ",
+                    style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontWeight: FontWeight.w300,
+                        fontSize: 13,
+                        color: Colors.grey),
                   ),
-                ),
-                const SizedBox(height: 16),
-              ],
-            );
-          })
-        ],
+                  const Icon(
+                    Icons.arrow_forward_ios_outlined,
+                  ),
+                ],
+              ),
+              onTap: () {
+                Navigator.pushNamed(context, '/taskDateTimeSelectionScreen',
+                        arguments: task)
+                    .then((data) {
+                  if (data != null) {
+
+                    Task newTask = data as Task;
+                    print("Recieved Task: $newTask");
+                    task.date = newTask.date;
+                    task.time = newTask.time;
+                    task.repeatPattern = newTask.repeatPattern;
+                    task.reminders = newTask.reminders;
+                    setState(() {});
+                  }
+                });
+                // Navigator.push(context, MaterialPageRoute(builder: (context)=> SetDateTimeScreen()));
+              },
+            ),
+            const SizedBox(height: 16),
+            SubTaskInputField(
+              controller: _subTaskController,
+              iconButton: IconButton(
+                onPressed: () {
+                  if (_subTaskController.text.isNotEmpty) {
+                    subTasksControllers.add(
+                        TextEditingController(text: _subTaskController.text));
+                    _subTaskController.clear();
+                    setState(() {});
+                  }
+                },
+                icon: const Icon(Icons.add),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...List.generate(subTasksControllers.length, (index) {
+              return Column(
+                children: [
+                  SubTaskInputField(
+                    controller: subTasksControllers[index],
+                    iconButton: IconButton(
+                      onPressed: () {
+                        subTasksControllers.removeAt(index);
+                        setState(() {});
+                      },
+                      icon: const Icon(Icons.close),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              );
+            })
+          ],
+        ),
       ),
     );
   }
