@@ -24,12 +24,14 @@ import 'model/event/event_reminder_modal.dart';
 import 'model/event/event_repetition_modal.dart';
 import 'model/task/task_modal.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService.initNotification();
   await WorkManagerService.initialize();
   tz.initializeTimeZones();
   runApp(MyApp());
+
 }
 
 class MyApp extends StatelessWidget {
