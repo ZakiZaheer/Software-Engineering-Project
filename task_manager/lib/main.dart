@@ -17,12 +17,14 @@ import 'package:timezone/data/latest.dart' as tz;
 
 import 'model/task/task_modal.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService.initNotification();
   await WorkManagerService.initialize();
   tz.initializeTimeZones();
   runApp(MyApp());
+
 }
 
 class MyApp extends StatelessWidget {
