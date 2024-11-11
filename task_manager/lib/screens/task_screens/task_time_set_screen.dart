@@ -8,6 +8,7 @@ import 'package:task_manager/customWidgets/alert_slider.dart';
 import 'package:task_manager/model/task/taskReminder_modal.dart';
 import 'package:task_manager/model/task/taskRepetition_modal.dart';
 import 'package:task_manager/Custom_Fonts.dart';
+import '../../customWidgets/footer.dart';
 import '../../model/task/task_modal.dart';
 
 class TaskDateTimeSelectionScreen extends StatefulWidget {
@@ -251,6 +252,7 @@ class _TaskDateTimeSelectionScreenState
           ],
         ),
       ),
+      bottomNavigationBar: MainFooter(index: 0),
     );
   }
 

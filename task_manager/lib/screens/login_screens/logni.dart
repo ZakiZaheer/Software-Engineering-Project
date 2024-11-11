@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:task_manager/screens/login_screens/login.dart';
+import '../../customWidgets/footer.dart';
 import'forgot_pass.dart';
 
 void main(){
@@ -44,9 +45,11 @@ class _loginPageState extends State<loginPage>{
   @override
   Widget build(BuildContext context){
     return Scaffold(
+      backgroundColor: const Color(0xFF051A33),
+
       appBar: AppBar(
         backgroundColor: Color(0xFF091F40),
-        title: Text('Login'),
+        title: Text('Login',style: const TextStyle(color: Colors.white)),
       ),
       body: Container(
         color: Color(0xFF091F40),
@@ -106,7 +109,7 @@ class _loginPageState extends State<loginPage>{
                     ),
                   ),
                 ),
-                SizedBox(height: 200),
+                SizedBox(height: 20),
                 TextButton(
                   onPressed: () {
                     Navigator.push(
@@ -121,6 +124,8 @@ class _loginPageState extends State<loginPage>{
           ),
         ),
       ),
+      bottomNavigationBar: MainFooter(index: 2),
+
     );
   }
 

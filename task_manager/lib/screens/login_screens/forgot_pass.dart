@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../customWidgets/footer.dart';
 import 'OTP.dart';
 
 void main(){
@@ -37,6 +38,8 @@ class _forgotPassState extends State<ForgotPassword>{
   @override
   Widget build(BuildContext context){
     return Scaffold(
+      backgroundColor: const Color(0xFF051A33),
+
       appBar: AppBar(
         backgroundColor: Color(0xFF091F40),
         title: Text(''),
@@ -102,6 +105,8 @@ class _forgotPassState extends State<ForgotPassword>{
           ),
         ),
       ),
+      bottomNavigationBar: MainFooter(index: 2),
+
     );
   }
 

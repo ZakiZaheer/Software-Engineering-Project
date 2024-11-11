@@ -4,19 +4,19 @@ import 'package:task_manager/Custom_Fonts.dart';
 import 'package:task_manager/model/task/taskReminder_modal.dart';
 
 import '../../customWidgets/GraadientCheckBox.dart';
-import '../../customWidgets/footer.dart';
+import '../../model/event/event_reminder_modal.dart';
 
-class TaskRemindersScreen extends StatefulWidget {
-  final List<TaskReminder>? reminders;
+class EventRemindersScreen extends StatefulWidget {
+  final List<EventReminder>? reminders;
 
-  const TaskRemindersScreen(
+  const EventRemindersScreen(
       {super.key, required this.reminders});
 
   @override
-  _TaskRemindersScreenState createState() => _TaskRemindersScreenState();
+  _EventRemindersScreenState createState() => _EventRemindersScreenState();
 }
 
-class _TaskRemindersScreenState extends State<TaskRemindersScreen> {
+class _EventRemindersScreenState extends State<EventRemindersScreen> {
   List<String> options = [
     "5 Minutes",
     "1 Hour",
@@ -27,7 +27,7 @@ class _TaskRemindersScreenState extends State<TaskRemindersScreen> {
   @override
   void initState() {
     if(widget.reminders != null){
-      for(TaskReminder reminder in widget.reminders!) {
+      for(EventReminder reminder in widget.reminders!) {
         final option = "${reminder.reminderInterval} ${reminder.reminderUnit}";
         if (option == "0 Minute") {
           selectedOptions.add("At Time Of Task");
@@ -68,8 +68,8 @@ class _TaskRemindersScreenState extends State<TaskRemindersScreen> {
           TextButton(
             onPressed: () {
               List<TaskReminder> reminderList = [];
-              if(selectedOptions.contains("At Time Of Task")){
-                selectedOptions.remove("At Time Of Task");
+              if(selectedOptions.contains("At Time Of Event")){
+                selectedOptions.remove("At Time Of Event");
                 reminderList.add(TaskReminder(reminderInterval: 0, reminderUnit: "Minute"));
               }
               reminderList = reminderList + List.generate(selectedOptions.length, (index){
@@ -130,14 +130,14 @@ class _TaskRemindersScreenState extends State<TaskRemindersScreen> {
                   IgnorePointer(
                     ignoring: remindersEnabled,
                     child: GradientCheckBox(
-                        text: "At Time Of Task",
-                        isSelected: selectedOptions.contains("At Time Of Task"),
+                        text: "At Time Of Event",
+                        isSelected: selectedOptions.contains("At Time Of Event"),
                         onSelect: () {
                           setState(() {
-                            if (selectedOptions.contains("At Time Of Task")) {
-                              selectedOptions.remove("At Time Of Task");
+                            if (selectedOptions.contains("At Time Of Event")) {
+                              selectedOptions.remove("At Time Of Event");
                             } else {
-                              selectedOptions.add("At Time Of Task");
+                              selectedOptions.add("At Time Of Event");
                             }
                           });
                         }),
@@ -148,16 +148,16 @@ class _TaskRemindersScreenState extends State<TaskRemindersScreen> {
                       ignoring: remindersEnabled,
                       // Disable interactions if toggle is off
                       child: GradientCheckBox(
-                        text: "$option Before Task",
+                        text: "$option Before Event",
                         isSelected: isSelected,
                         onSelect: () {
-                            setState(() {
-                              if (isSelected) {
-                                selectedOptions.remove(option);
-                              } else {
-                                selectedOptions.add(option);
-                              }
-                            });
+                          setState(() {
+                            if (isSelected) {
+                              selectedOptions.remove(option);
+                            } else {
+                              selectedOptions.add(option);
+                            }
+                          });
                         },
                       ),
                     );
@@ -172,6 +172,7 @@ class _TaskRemindersScreenState extends State<TaskRemindersScreen> {
                           context,
                           title: 'Custom Reminder',
                           forReminder: true,
+                          forEvent: true,
                           onConfirm: (interval, unit) {
                             final option = "$interval $unit";
                             if (!options.contains(option)){
@@ -195,7 +196,6 @@ class _TaskRemindersScreenState extends State<TaskRemindersScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: MainFooter(index: 0),
     );
   }
 }

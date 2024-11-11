@@ -3,6 +3,7 @@ import 'package:task_manager/customWidgets/custom_picker.dart';
 import 'package:task_manager/Custom_Fonts.dart';
 import 'package:task_manager/model/task/taskRepetition_modal.dart';
 import '../../customWidgets/GraadientCheckBox.dart';
+import '../../customWidgets/footer.dart';
 import '../../model/task/task_modal.dart';
 
 class TaskRepeatScreen extends StatefulWidget {
@@ -133,6 +134,7 @@ class _TaskRepeatScreenState extends State<TaskRepeatScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: MainFooter(index: 0),
     );
   }
 }

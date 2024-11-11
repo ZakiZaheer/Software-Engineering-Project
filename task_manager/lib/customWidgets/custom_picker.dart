@@ -6,6 +6,7 @@ void showCustomRepeatPicker(
   required String title,
   required void Function(int number, String unit) onConfirm,
       bool forReminder = false,
+      bool forEvent = false,
 }) {
   showModalBottomSheet(
     context: context,
@@ -18,6 +19,7 @@ void showCustomRepeatPicker(
         title: title,
         onConfirm: onConfirm,
         forReminder: forReminder,
+        forEvent: forEvent,
       );
     },
   );
@@ -25,10 +27,11 @@ void showCustomRepeatPicker(
 
 class CustomRepeatPicker extends StatefulWidget {
   final bool? forReminder;
+  final bool? forEvent;
   final String title;
   final void Function(int number, String unit) onConfirm;
 
-  CustomRepeatPicker({required this.title, required this.onConfirm , this.forReminder});
+  CustomRepeatPicker({required this.title, required this.onConfirm , this.forReminder , this.forEvent});
 
   @override
   _CustomRepeatPickerState createState() => _CustomRepeatPickerState();
@@ -78,7 +81,7 @@ class _CustomRepeatPickerState extends State<CustomRepeatPicker> {
           ),
           SizedBox(height: 4),
           Text(
-            widget.forReminder ==true ?'$selectedNumber $selectedUnit Before The Task ' :'Every $selectedNumber $selectedUnit(s)',
+            widget.forReminder ==true ?'$selectedNumber $selectedUnit Before The ${widget.forEvent !=  null ? "Event" : "Task"} ' :'Every $selectedNumber $selectedUnit(s)',
             style: TextStyle(
               color: Colors.black,
               fontSize: 14,

@@ -5,18 +5,18 @@ import 'package:task_manager/customWidgets/date_picker.dart';
 import 'package:task_manager/model/task/taskRepetition_modal.dart';
 
 import '../../customWidgets/GraadientCheckBox.dart';
-import '../../customWidgets/footer.dart';
+import '../../model/event/event_repetition_modal.dart';
 
-class TaskRepeatUntilScreen extends StatefulWidget {
-  final TaskRepetition? repeatPattern;
+class EventRepeatUntilScreen extends StatefulWidget {
+  final EventRepetition? repeatPattern;
 
-  const TaskRepeatUntilScreen({super.key, this.repeatPattern});
+  const EventRepeatUntilScreen({super.key, this.repeatPattern});
 
   @override
-  _TaskRepeatUntilScreenState createState() => _TaskRepeatUntilScreenState();
+  _EventRepeatUntilScreenState createState() => _EventRepeatUntilScreenState();
 }
 
-class _TaskRepeatUntilScreenState extends State<TaskRepeatUntilScreen> {
+class _EventRepeatUntilScreenState extends State<EventRepeatUntilScreen> {
   List<String> options = [
     "Never",
     "Time",
@@ -170,7 +170,6 @@ class _TaskRepeatUntilScreenState extends State<TaskRepeatUntilScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: MainFooter(index: 0),
     );
   }
   _selectedValue(){

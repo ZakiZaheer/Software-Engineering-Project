@@ -26,7 +26,7 @@ class _MainFooterState extends State<MainFooter> {
   final List<String> _pages = [
     '/',
       '/eventScreen',
-    '/classroomSplashScreen',
+    '/signUpScreen',
     '/settingsScreen'
   ];
 
@@ -49,7 +49,7 @@ class _MainFooterState extends State<MainFooter> {
         Container(
           height: 120 + (_sizeFactor * 120),
           decoration: const BoxDecoration(
-            color: Color(0xFF091F40),
+            color: Colors.transparent,
           ),
           child: AnimatedContainer(
             duration: const Duration(seconds: 1),
@@ -60,7 +60,7 @@ class _MainFooterState extends State<MainFooter> {
                     end: Alignment.bottomCenter)
                     :
                 const LinearGradient(
-                    colors: [Color(0xFF091F40), Color(0xFF091F40)],
+                    colors: [Colors.transparent, Colors.transparent],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter)
             ),

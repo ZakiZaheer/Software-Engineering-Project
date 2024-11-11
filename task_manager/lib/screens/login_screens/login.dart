@@ -1,25 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:task_manager/customWidgets/footer.dart';
 import 'logni.dart';
 
-void main() {
-  runApp(SignUpApp());
-}
 
-class SignUpApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Sign Up',
-      theme: ThemeData(
-        primarySwatch: Colors.blueGrey,
-        brightness: Brightness.dark,
-      ),
-      home: SignUpPage(),
-    );
-  }
-}
 
 class SignUpPage extends StatefulWidget {
   @override
@@ -51,9 +36,11 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF051A33),
+
       appBar: AppBar(
         backgroundColor: Color(0xFF091F40),
-        title: Text('Sign Up'),
+        title: Text('Sign Up', style: const TextStyle(color: Colors.white)),
       ),
       body: Container(
         color: Color(0xFF091F40),
@@ -64,12 +51,12 @@ class _SignUpPageState extends State<SignUpPage> {
             child: ListView(
               children: [
                 // Email input
-                Text("Email"),
+                Text("Email" , style: const TextStyle(color: Colors.white)),
                 _email(),
                 SizedBox(height: 16),
 
                 // Roll Number input
-                Text("Roll number"),
+                Text("Roll number", style: const TextStyle(color: Colors.white)),
                 /*TextFormField(
                   controller: _rollNumberController,
                   decoration: InputDecoration(
@@ -82,24 +69,24 @@ class _SignUpPageState extends State<SignUpPage> {
                 SizedBox(height: 16),
 
                 // Full Name input
-                Text("Name"),
+                Text("Name", style: const TextStyle(color: Colors.white)),
                 _buildTextField('Full Name','Full Name',_nameController),
                 SizedBox(height: 16),
 
                 // Course dropdown
-                Text("Course"),
+                Text("Course", style: const TextStyle(color: Colors.white)),
                 _Courses(),
                 SizedBox(height: 16),
 
                 // Date of Birth input (optional)
-                Text("Date of Birth"),
+                Text("Date of Birth", style: const TextStyle(color: Colors.white)),
                 _DoB('DOB', 'Date of Birth(Optional)'),
 
 
                 SizedBox(height: 16),
 
                 // Password input
-                Text("Set Password"),
+                Text("Set Password", style: const TextStyle(color: Colors.white)),
                 _passWord("Set Password"),
                 SizedBox(height: 32),
 
@@ -129,25 +116,27 @@ class _SignUpPageState extends State<SignUpPage> {
                         print('Sign Up Successful');
                       }
                     },
-                    child: Text('Sign up'),
+                    child: Text('Sign up', style: const TextStyle(color: Colors.white)),
                   ),
                 ),
 
                 // Already have an account
                 TextButton(
                   onPressed: () {
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context)=> loginPage()),
                     );
                   },
-                  child: Text('Already have an account? Log in'),
+                  child: Text('Already have an account? Log in', style: const TextStyle(color: Colors.white)),
                 ),
               ],
             ),
           ),
         ),
       ),
+      bottomNavigationBar: MainFooter(index: 2),
     );
   }
 
@@ -180,6 +169,7 @@ class _SignUpPageState extends State<SignUpPage> {
               borderRadius: BorderRadius.circular(10),
             ),
             child:DropdownButtonFormField<String>(
+              dropdownColor: Color(0xFF091F40),
               value: _selectedCourse,
               decoration: const InputDecoration(
                 hintText: "Select your course",

@@ -6,7 +6,7 @@ class SelectionField extends StatefulWidget {
   final String title;
   final String initialValue;
   final Function()? onTap;
-  final isActive;
+  final bool isActive;
 
   const SelectionField({super.key, required this.title, required this.initialValue , required this.onTap , required this.isActive });
 
@@ -26,6 +26,7 @@ class _SelectionFieldState extends State<SelectionField> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      contentPadding:const  EdgeInsets.symmetric(vertical: 0),
       title: Text(
         widget.title,
         style: widget.isActive ? timeLeftContent() : timeLeftContentDisabled(),
@@ -49,6 +50,7 @@ class _SelectionFieldState extends State<SelectionField> {
         if(newVal != null){
           setState(() {
             value = newVal;
+            print("${widget.title} value changed to $value");
           });
         }
       } : null,

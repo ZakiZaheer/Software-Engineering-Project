@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../customWidgets/footer.dart';
 import 'NewPass.dart';
 
 void main(){
@@ -44,6 +45,8 @@ class _PageState extends State<otpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF051A33),
+
       appBar: AppBar(
         backgroundColor: Color(0xFF091F40),
         title: Text(''),
@@ -120,6 +123,7 @@ class _PageState extends State<otpPage> {
           ),
         ),
       ),
+      bottomNavigationBar: MainFooter(index: 2),
     );
   }
 }

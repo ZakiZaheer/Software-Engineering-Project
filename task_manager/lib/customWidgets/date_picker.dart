@@ -214,9 +214,9 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
               // OK Button
               ElevatedButton(
                 onPressed: () {
-                  final selecteedDate = DateTime(selectedYear,selectedMonth,selectedDay);
+                  final selectedDate = DateTime(selectedYear,selectedMonth,selectedDay);
                   Navigator.of(context)
-                      .pop(DateFormat('yyyy-MM-dd').format(selecteedDate)); // Return selected date
+                      .pop(DateFormat('yyyy-MM-dd').format(selectedDate)); // Return selected date
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF081c3d),

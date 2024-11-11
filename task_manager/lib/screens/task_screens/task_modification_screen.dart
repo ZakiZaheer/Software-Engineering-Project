@@ -10,6 +10,7 @@ import 'package:task_manager/Custom_Fonts.dart';
 import 'package:task_manager/customWidgets/alert_slider.dart';
 import 'package:task_manager/model/task/taskReminder_modal.dart';
 import 'package:task_manager/notification_service/notification_service.dart';
+import '../../customWidgets/footer.dart';
 import '../../model/task/task_modal.dart';
 
 class TaskModificationScreen extends StatefulWidget {
@@ -243,6 +244,7 @@ class _TaskModificationScreenState extends State<TaskModificationScreen> {
           })
         ],
       ),
+      bottomNavigationBar: MainFooter(index: 0),
     );
   }
 }

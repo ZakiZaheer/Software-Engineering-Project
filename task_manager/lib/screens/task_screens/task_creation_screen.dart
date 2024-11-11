@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:task_manager/customWidgets/DropDownField.dart';
 import 'package:task_manager/customWidgets/ErrorDialog.dart';
 import 'package:task_manager/customWidgets/SubTaskInputField.dart';
+import 'package:task_manager/customWidgets/footer.dart';
 import 'package:task_manager/customWidgets/inputField.dart';
 import 'package:task_manager/database_service/sqfliteService.dart';
 import 'package:task_manager/model/task/subTask_modal.dart';
@@ -61,7 +62,7 @@ class _TaskCreationScreenState extends State<TaskCreationScreen> {
       showDialog(
           context: context,
           builder: (BuildContext context) {
-            return const ErrorDialog(title: "Empty Task Title NOt Allowed!");
+            return const ErrorDialog(title: "Empty Task Title Not Allowed!");
           });
     }
   }
@@ -218,6 +219,7 @@ class _TaskCreationScreenState extends State<TaskCreationScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: MainFooter(index: 0),
     );
   }
 }
