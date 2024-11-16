@@ -67,17 +67,17 @@ class _EventRemindersScreenState extends State<EventRemindersScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              List<TaskReminder> reminderList = [];
+              List<EventReminder> reminderList = [];
               if(selectedOptions.contains("At Time Of Event")){
                 selectedOptions.remove("At Time Of Event");
-                reminderList.add(TaskReminder(reminderInterval: 0, reminderUnit: "Minute"));
+                reminderList.add(EventReminder(reminderInterval: 0, reminderUnit: "Minute"));
               }
               reminderList = reminderList + List.generate(selectedOptions.length, (index){
                 final parts = selectedOptions[index].split(" ");
-                return TaskReminder(reminderInterval: int.parse(parts[0]), reminderUnit: parts[1]);
+                return EventReminder(reminderInterval: int.parse(parts[0]), reminderUnit: parts[1]);
               });
               print(reminderList);
-              Navigator.pop(context , reminderList);
+              Navigator.pop(context ,reminderList);
             },
             child: Text(
               "Save",

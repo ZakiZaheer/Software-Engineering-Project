@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:task_manager/screens/login_screens/login.dart';
+import 'package:task_manager/screens/login_screens/SignUpScreen.dart';
 import '../../customWidgets/footer.dart';
 import'forgot_pass.dart';
 

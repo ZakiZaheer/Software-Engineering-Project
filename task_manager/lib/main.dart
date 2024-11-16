@@ -7,7 +7,7 @@ import 'package:task_manager/screens/event_screens/event_creation_screen.dart';
 import 'package:task_manager/screens/event_screens/event_reminder.dart';
 import 'package:task_manager/screens/event_screens/event_repeat_screen.dart';
 import 'package:task_manager/screens/event_screens/event_stop_repeat_screen.dart';
-import 'package:task_manager/screens/login_screens/login.dart';
+import 'package:task_manager/screens/login_screens/SignUpScreen.dart';
 import 'package:task_manager/screens/login_screens/splashScrren.dart';
 import 'package:task_manager/screens/event_screens/daily_event_view.dart';
 import 'package:task_manager/screens/setting_screens/setting_screen.dart';

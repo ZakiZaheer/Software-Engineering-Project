@@ -3,25 +3,6 @@ import 'package:flutter/services.dart';
 import '../../customWidgets/footer.dart';
 import 'NewPass.dart';
 
-void main(){
-  runApp(OTP());
-}
-
-class OTP extends StatelessWidget{
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-
-      theme: ThemeData(
-        primarySwatch: Colors.blueGrey,
-        brightness: Brightness.dark,
-      ),
-      home: otpPage(),
-    );
-
-  }
-
-}
 
 class otpPage extends StatefulWidget{
   @override
@@ -49,23 +30,23 @@ class _PageState extends State<otpPage> {
 
       appBar: AppBar(
         backgroundColor: Color(0xFF091F40),
-        title: Text(''),
+        title: const Text(''),
       ),
       body: Container(
-        color: Color(0xFF091F40),
+        color: const Color(0xFF091F40),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
             key: _formKey,
             child: ListView(
               children: [
-                Text("Enter OTP", style: TextStyle(
+                const Text("Enter OTP", style: TextStyle(
                     fontSize: 40
                 ),),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 _otp(controllersList),
 
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(14),
@@ -80,7 +61,7 @@ class _PageState extends State<otpPage> {
                     padding: const EdgeInsets.only(left: 5),
                     child: ElevatedButton(
                       style: ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(
+                        backgroundColor: const WidgetStatePropertyAll(
                             Colors.transparent),
                         shape: WidgetStatePropertyAll(
                           RoundedRectangleBorder(
@@ -140,7 +121,7 @@ Widget _otp(List _conts){
         child: Container(
           height: 40,
           decoration: BoxDecoration(
-            color: Color(0xFF091F40),
+            color: const Color(0xFF091F40),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
@@ -166,7 +147,7 @@ Widget sCont(TextEditingController _cont){
     width: 40,
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(10),
-      gradient: LinearGradient(
+      gradient: const LinearGradient(
         colors: [Colors.white, Colors.transparent],
         begin: Alignment.centerLeft,
         end: Alignment.bottomRight,
@@ -176,7 +157,7 @@ Widget sCont(TextEditingController _cont){
     child: Container(
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: Color(0xFF091F40)
+          color: const Color(0xFF091F40)
       ),
       child: Padding(
         padding: const EdgeInsets.only(bottom: 11),

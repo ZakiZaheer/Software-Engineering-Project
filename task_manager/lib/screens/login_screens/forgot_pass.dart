@@ -2,25 +2,7 @@ import 'package:flutter/material.dart';
 import '../../customWidgets/footer.dart';
 import 'OTP.dart';
 
-void main(){
-  runApp(forgotPass());
-}
 
-class forgotPass extends StatelessWidget{
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      
-      theme: ThemeData(
-        primarySwatch: Colors.blueGrey,
-        brightness: Brightness.dark,
-      ),
-      home: ForgotPassword(),
-    );
-
-  }
-
-}
 
 class ForgotPassword extends StatefulWidget{
   @override
