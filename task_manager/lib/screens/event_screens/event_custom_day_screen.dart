@@ -115,7 +115,7 @@ class _CustomFrequencyPageState extends State<CustomFrequencyPage> {
   @override
   void initState() {
     if(widget.selectedOption != "Never"){
-      final optionSplit = widget.selectedOption.split(" ");
+      final optionSplit = widget.selectedOption.trim().split(" ");
       selectedUnit = optionSplit[1];
       selectedInterval = int.parse(optionSplit[0]);
       if(optionSplit.length > 2){
