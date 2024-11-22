@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:task_manager/model/event/event_modal.dart';
 import 'package:task_manager/model/task/taskReminder_modal.dart';
 import 'package:task_manager/model/task/taskRepetition_modal.dart';
 import 'package:task_manager/notification_service/notification_service.dart';
 import 'package:task_manager/notification_service/work_manger_service.dart';
 import 'package:task_manager/screens/event_screens/event_creation_screen.dart';
+import 'package:task_manager/screens/event_screens/event_modification_screen.dart';
 import 'package:task_manager/screens/event_screens/event_reminder.dart';
 import 'package:task_manager/screens/event_screens/event_repeat_screen.dart';
 import 'package:task_manager/screens/event_screens/event_stop_repeat_screen.dart';
@@ -78,6 +80,7 @@ class MyApp extends StatelessWidget {
         '/eventRepeatScreen' : (context) => EventRepeatScreen(repeatPattern: ModalRoute.of(context)!.settings.arguments as EventRepetition?,),
         '/eventRepeatUntilScreen' : (context) => EventRepeatUntilScreen(repeatPattern: ModalRoute.of(context)!.settings.arguments as EventRepetition?,),
         '/eventRemindersScreen' : (context) => EventRemindersScreen(reminders: ModalRoute.of(context)!.settings.arguments as List<EventReminder>?,),
+        '/eventModificationScreen' : (context) => EventModificationScreen(event: ModalRoute.of(context)!.settings.arguments as Event),
         '/classroomSplashScreen' : (context) => const SplashScreen(),
         '/signUpScreen' : (context) => SignUpPage(),
         '/settingsScreen' : (context) => const SettingScreen(),

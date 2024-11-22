@@ -31,11 +31,11 @@ class Event {
     return {
       'title': title,
       'description': description,
-      'startTime': startTime,
-      'endTime': endTime,
+      'start_time': startTime.toIso8601String(),
+      'end_time': endTime.toIso8601String(),
       'category': eventType,
       'location': location,
-      'smartSuggestion': smartSuggestion == true ? 1 : 0,
+      'is_smart_suggested': smartSuggestion == true ? 1 : 0,
     };
   }
 
@@ -44,11 +44,11 @@ class Event {
       id: map['id'],
       title: map['title'],
       description: map['description'],
-      startTime: map['startTime'] ?? "00:00",
-      endTime: map['endTime'] ?? "23:59",
-      eventType: map['category'] ?? "Normal",
+      startTime: DateTime.parse(map['start_time']) ,
+      endTime: DateTime.parse(map['end_time']),
+      eventType: map['category'],
       location: map['location'],
-      smartSuggestion: map['smartSuggestion'] == 1 ? true : false ,
+      smartSuggestion: map['is_smart_suggested'] == 1 ? true : false ,
     );
   }
 

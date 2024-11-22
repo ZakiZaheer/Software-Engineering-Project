@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:task_manager/model/event/event_reminder_modal.dart';
 import 'package:task_manager/model/task/subTask_modal.dart';
 import 'package:task_manager/model/task/taskReminder_modal.dart';
 import 'package:task_manager/model/task/taskRepetition_modal.dart';
 import 'package:task_manager/notification_service/notification_service.dart';
 import 'package:task_manager/notification_service/work_manger_service.dart';
+import '../model/event/event_modal.dart';
+import '../model/event/event_repetition_modal.dart';
 import '../model/task/task_modal.dart';
 
 class SqfLiteService {
@@ -24,7 +27,7 @@ class SqfLiteService {
   }
 
   Future<Database> _initDB() async {
-    final path = join(await getDatabasesPath(), 'TaskManager5.db');
+    final path = join(await getDatabasesPath(), 'TaskManager6.db');
     return openDatabase(path, version: 1, onCreate: _createDB);
   }
 
@@ -88,9 +91,8 @@ class SqfLiteService {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         description TEXT,
-        date DATE NOT NULL,
-        start_time TIME NOT NULL,
-        end_time TIME NOT NULL,
+        start_time TEXT NOT NULL,
+        end_time TEXT NOT NULL,
         category TEXT NOT NULL,
         location TEXT,
         is_smart_suggested INTEGER NOT NULL
@@ -490,6 +492,161 @@ class SqfLiteService {
   Future<void> deleteTaskReminders(int taskId) async {
     final db = await database;
     await db.delete('task_reminder', where: 'task_id = ?', whereArgs: [taskId]);
+  }
+
+  Future<void> addEvent(Event event) async {
+    final db = await database;
+    event.id = await db.insert('event', event.toMap());
+  print("Event id: ${event.id}");
+    if (event.reminders != null) {
+      for (EventReminder reminder in event.reminders!) {
+        reminder.eventId = event.id;
+        db.insert("event_reminder", reminder.toMap());
+      }
+    }
+    if (event.repeatPattern != null) {
+      event.repeatPattern!.eventId = event.id;
+      await db.insert("event_repetition", event.repeatPattern!.toMap());
+    }
+  }
+
+  Future<void> deleteEvent(Event id) async {
+    final db = await database;
+    await db.delete("event", where: "id = ?", whereArgs: [id]);
+  }
+
+  Future<void> modifyEvent(Event event) async {
+    final db = await database;
+    await db.update("event", event.toMap(),
+        where: "id = ?", whereArgs: [event.id!]);
+    await db.delete("event_repetition",
+        where: "event_id = ?", whereArgs: [event.id!]);
+    await db.delete("event_reminder",
+        where: "event_id = ?", whereArgs: [event.id!]);
+
+    if (event.reminders != null) {
+      for (EventReminder reminder in event.reminders!) {
+        reminder.eventId = event.id;
+        await db.insert("event_reminder", reminder.toMap());
+      }
+    }
+
+    if (event.repeatPattern != null) {
+      event.repeatPattern!.eventId = event.id;
+      await db.insert("event_repetition", event.repeatPattern!.toMap());
+    }
+  }
+
+  Future<List<Event>> getDailyEvents(DateTime date) async {
+    final db = await database;
+    final date1 = date.toIso8601String();
+    final date2 = date.add(const Duration(days: 1)).toIso8601String();
+    final map =
+        await db.query('event', where: 'start_time >= ? AND start_time < ?', whereArgs: [date1,date2]);
+    List<Event> events = List.generate(map.length, (index) {
+      return Event.fromMap(map[index]);
+    });
+
+    for (Event event in events) {
+      event.reminders = await getEventReminders(event.id!);
+      event.repeatPattern = await getEventRepetition(event.id!);
+    }
+    return events;
+  }
+
+  Future<List<Event>> getWeeklyEvents(DateTime date) async {
+    // Calculate the start (Monday) and end (Sunday) of the week
+    final startOfWeek = date.subtract(Duration(days: date.weekday - 1));
+    final endOfWeek = startOfWeek.add(const Duration(days: 7));
+
+    // Ensure your database uses proper date formats
+    final db = await database;
+
+    // Query the database for events in the week range
+    final map = await db.query(
+      'event',
+      where: 'start_time >= ? AND start_time < ?',
+      whereArgs: [
+        formatDate(startOfWeek),
+        formatDate(endOfWeek)
+      ],
+    );
+
+    // Map results to Event objects
+    List<Event> events = List.generate(map.length, (index) {
+      return Event.fromMap(map[index]);
+    });
+
+    // Fetch associated reminders and repetition patterns
+    for (Event event in events) {
+      event.reminders = await getEventReminders(event.id!);
+      event.repeatPattern = await getEventRepetition(event.id!);
+    }
+
+    return events;
+  }
+
+
+  Future<List<Event>> getMonthlyEvents(DateTime date) async {
+    // Calculate the start (first day) and end (last day) of the month
+    final startOfMonth = DateTime(date.year, date.month, 1);
+    final endOfMonth = DateTime(date.year, date.month + 1, 1);
+
+    // Ensure your database uses proper date formats
+    final db = await database;
+
+    // Query the database for events in the month range
+    final map = await db.query(
+      'event',
+      where: 'start_time >= ? AND start_time < ?',
+      whereArgs: [
+        formatDate(startOfMonth),
+        formatDate(endOfMonth)
+      ],
+    );
+
+    // Map results to Event objects
+    List<Event> events = List.generate(map.length, (index) {
+      return Event.fromMap(map[index]);
+    });
+
+    // Fetch associated reminders and repetition patterns
+    for (Event event in events) {
+      event.reminders = await getEventReminders(event.id!);
+      event.repeatPattern = await getEventRepetition(event.id!);
+    }
+
+    return events;
+  }
+
+
+  Future<List<EventReminder>?> getEventReminders(int eventId) async {
+    final db = await database;
+    List<Map<String, dynamic>> map = await db
+        .query('event_reminder', where: 'event_id = ?', whereArgs: [eventId]);
+    List<EventReminder> reminders = List.generate(map.length, (index) {
+      return EventReminder.fromMap(map[index]);
+    });
+    return reminders.isNotEmpty ? reminders : null;
+  }
+
+  Future<EventRepetition?> getEventRepetition(int eventId) async {
+    final db = await database;
+    List<Map<String, dynamic>> map = await db
+        .query('event_repetition', where: 'event_id = ?', whereArgs: [eventId]);
+    if (map.isNotEmpty) {
+      return EventRepetition.fromMap(map[0]);
+    }
+    return null;
+  }
+
+  Future<Event> getEventById(int id)async{
+    final db = await database;
+    final map = await db.query("event" , where: "id = ?",whereArgs: [id]);
+    final event = Event.fromMap(map[0]);
+    event.reminders = await getEventReminders(event.id!);
+    event.repeatPattern = await getEventRepetition(event.id!);
+    return event;
   }
 }
 

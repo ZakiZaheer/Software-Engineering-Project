@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:task_manager/customWidgets/CustomDivider.dart';
 import 'package:task_manager/customWidgets/SelectionField.dart';
 import 'package:task_manager/customWidgets/inputField.dart';
+import 'package:task_manager/database_service/sqfliteService.dart';
 import 'package:task_manager/model/event/event_modal.dart';
 import '../../customWidgets/ErrorDialog.dart';
 import '../../customWidgets/alert_slider.dart';
@@ -14,7 +15,6 @@ import '../../model/event/event_repetition_modal.dart';
 
 class EventCreationScreen extends StatefulWidget {
   const EventCreationScreen({super.key});
-
   @override
   State<EventCreationScreen> createState() => _EventCreationScreenState();
 }
@@ -30,7 +30,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   String _selectedReminderType = "Default";
-
+  final db = SqfLiteService();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,14 +40,14 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
-          onPressed: () {
+          onPressed: ()async {
             Navigator.pop(context);
           },
         ),
         title: Text(_titleText(), style: const TextStyle(color: Colors.white)),
         actions: [
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               if (_titleController.text.isNotEmpty) {
                 if(_selectedStartTime != null){
                   if(_selectedEndTime != null){
@@ -68,7 +68,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                     if(event.eventType != "General"){
                       event.repeatPattern = EventRepetition(repeatInterval: 1, repeatUnit: "Year");
                     }
-                    //Create Event
+                    await db.addEvent(event);
                   }
                   else{
                     _showErrorDialog(context, "EndTime Not Selected!");
@@ -78,7 +78,6 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                   _showErrorDialog(context, "Start Time Not Selected!");
                 }
                 event.title = _titleController.text;
-                print("Event: $event");
               } else {
                 _showErrorDialog(context, "Empty Event Name Not Allowed");
               }
@@ -170,6 +169,14 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               (value) {
             setState(() {
               isAllDay = !isAllDay;
+              if(_selectedStartTime != null){
+                _selectedStartTime = DateTime(
+                  _selectedStartTime!.month,
+                  _selectedStartTime!.year,
+                  _selectedStartTime!.day,
+                );
+                _selectedEndTime = _selectedStartTime!.add(Duration(days: 1));
+              }
             });
           },
         ),
@@ -279,18 +286,21 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           ),
         SelectionField(
           title: "Repeat",
-          initialValue: "none",
+          key: UniqueKey(),
+          initialValue: event.repeatPattern != null ? "Every ${event.repeatPattern!.repeatInterval} ${event.repeatPattern!.repeatUnit}${event.repeatPattern!.repeatOn != null ? " On ${event.repeatPattern!.repeatOn}" : "" }" : "none",
           onTap: _setEventRepetition,
           isActive: _selectedEndTime != null && _selectedStartTime != null,
         ),
         SelectionField(
           title: "Stop Repeating After",
-          initialValue: "Never",
+          key: UniqueKey(),
+          initialValue: event.repeatPattern != null ?  _checkRepeatType(event.repeatPattern!) : "Never",
           onTap: _setRepeatUntil,
           isActive: event.repeatPattern != null,
         ),
         SelectionField(
           title: "Reminder",
+          key: UniqueKey(),
           initialValue: event.reminders != null ?"Active" : "Disabled",
           onTap: _setEventReminders,
           isActive: _selectedEndTime != null && _selectedStartTime != null,
@@ -341,6 +351,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         ),
         SelectionField(
           title: "Reminder",
+          key: UniqueKey(),
           initialValue: event.reminders != null ? "Active" : "Disabled",
             onTap: _setEventReminders,
           isActive: _selectedEndTime != null && _selectedStartTime != null,
@@ -509,11 +520,6 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
 }
 
-
-
-
-
-
 String formatDateTime(DateTime date){
   return DateFormat('EEE, d MMM, yyyy, hh:mm a').format(date);
 }
@@ -526,4 +532,14 @@ _showErrorDialog(BuildContext context , String title){
         return ErrorDialog(
             title: title);
       });
+}
+
+String _checkRepeatType(EventRepetition repeatPattern){
+  if (repeatPattern.repeatType == "Time"){
+    return DateFormat('d MMM yyyy').format(DateTime.parse(repeatPattern.repeatUntil!));
+  }
+  else if(repeatPattern.repeatType == "Count"){
+    return "${repeatPattern.numOccurrence} Occurrences";
+  }
+  return "Never";
 }
