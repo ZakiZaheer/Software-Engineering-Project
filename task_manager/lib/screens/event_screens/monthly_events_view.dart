@@ -77,21 +77,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
           color: Color(0xFF0A1A2A),
           icon: const Icon(Icons.menu, color: Colors.white),
           onSelected: (value) {
-            if (value == "Calendar View") {
+            if (value == "Week View") {
               // Handle Calendar View
-            } else if (value == "Week View") {
-              // Handle Week View
             } else if (value == "Day View") {
-              // Handle Day View
+              // Handle Week View
             }
           },
           itemBuilder: (BuildContext context) {
             return [
-              const PopupMenuItem(
-                value: "Calendar View",
-                child: Text("Calendar View",
-                    style: TextStyle(color: Colors.white)),
-              ),
               const PopupMenuItem(
                 value: "Week View",
                 child: Text("Week View", style: TextStyle(color: Colors.white)),
@@ -190,8 +183,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
         itemBuilder: (context, index) {
           final day = index + 1;
           DateTime currentDate = DateTime(_focusedDay.year, _currentMonth, day);
-          bool isToday = currentDate == DateTime.now();
-          bool isSelected = currentDate == _selectedDay;
+
+          // Check if this is today's date
+          bool isToday = currentDate.year == DateTime.now().year &&
+              currentDate.month == DateTime.now().month &&
+              currentDate.day == DateTime.now().day;
+
+          // Check if this is the selected day
+          bool isSelected = currentDate.year == _selectedDay.year &&
+              currentDate.month == _selectedDay.month &&
+              currentDate.day == _selectedDay.day;
 
           return GestureDetector(
             onTap: () {
@@ -314,7 +315,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   void _showMonthPicker() {
-    int selectedYear = _focusedDay.year; // Initialize with the current year
+    int selectedYear = _focusedDay.year;
 
     showModalBottomSheet(
       context: context,
@@ -322,7 +323,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       backgroundColor: Color(0xFF0A1A2A),
       builder: (context) {
         return StatefulBuilder(
-          builder: (context, setState) {
+          builder: (context, setModalState) {
             return Container(
               decoration: BoxDecoration(
                 color: const Color(0xFF0A1A2A),
@@ -334,7 +335,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Year and Month Selector
+                  // Year Selector
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -342,7 +343,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         icon:
                             const Icon(Icons.chevron_left, color: Colors.white),
                         onPressed: () {
-                          setState(() {
+                          setModalState(() {
                             selectedYear--; // Decrement the year
                           });
                         },
@@ -359,7 +360,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         icon: const Icon(Icons.chevron_right,
                             color: Colors.white),
                         onPressed: () {
-                          setState(() {
+                          setModalState(() {
                             selectedYear++; // Increment the year
                           });
                         },
@@ -367,7 +368,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     ],
                   ),
                   const SizedBox(height: 16.0),
-                  // Months Grid
+                  // Month Selector
                   GridView.builder(
                     shrinkWrap: true,
                     gridDelegate:
@@ -384,6 +385,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             _currentMonth = index + 1;
                             _focusedDay =
                                 DateTime(selectedYear, _currentMonth, 1);
+
+                            // Check if the current date is in the selected month
+                            if (_currentMonth == DateTime.now().month &&
+                                selectedYear == DateTime.now().year) {
+                              _selectedDay =
+                                  DateTime.now(); // Highlight current date
+                            } else {
+                              _selectedDay = DateTime(selectedYear,
+                                  _currentMonth, 1); // Default to the first day
+                            }
                           });
                           Navigator.pop(context);
                         },

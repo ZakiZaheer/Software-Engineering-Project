@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
 
-class CustomDialogExample extends StatelessWidget {
+class CustomDialogExample extends StatefulWidget {
   final String eventTitle;
   final String eventDate;
   final String description;
+  final String? location;
 
   CustomDialogExample({
     required this.eventTitle,
     required this.eventDate,
     required this.description,
+    this.location,
   });
+
+  @override
+  _CustomDialogExampleState createState() => _CustomDialogExampleState();
+}
+
+class _CustomDialogExampleState extends State<CustomDialogExample> {
+  bool isSmartSuggestionEnabled = false;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +30,7 @@ class CustomDialogExample extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15.0),
       ),
-      backgroundColor: const Color(0xFF1A2B45), // Dialog background color
+      backgroundColor: const Color(0xFF1A2B45),
       child: Container(
         height: dialogHeight,
         width: dialogWidth,
@@ -45,7 +54,7 @@ class CustomDialogExample extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      eventTitle,
+                      widget.eventTitle,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -54,29 +63,11 @@ class CustomDialogExample extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      eventDate,
+                      widget.eventDate,
                       style: const TextStyle(
                         fontSize: 14,
                         color: Colors.white70,
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: const [
-                        Icon(
-                          Icons.calendar_today,
-                          size: 14,
-                          color: Colors.white70,
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          "Today",
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),
@@ -99,7 +90,27 @@ class CustomDialogExample extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              description,
+              widget.description,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.white70,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Location Section
+            const Text(
+              "Location",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              widget.location ?? "Not Available",
               style: const TextStyle(
                 fontSize: 14,
                 color: Colors.white70,
@@ -117,7 +128,7 @@ class CustomDialogExample extends StatelessWidget {
                   const Text(
                     "Reminders",
                     style: TextStyle(
-                      fontSize: 16, // Matches the design's section title size
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -127,7 +138,7 @@ class CustomDialogExample extends StatelessWidget {
                       Text(
                         "5 minutes before the event",
                         style: TextStyle(
-                          fontSize: 12, // Matches the design's metadata size
+                          fontSize: 12,
                           color: Colors.white70,
                         ),
                       ),
@@ -148,14 +159,16 @@ class CustomDialogExample extends StatelessWidget {
                 const Text(
                   "Smart suggestion",
                   style: TextStyle(
-                    fontSize: 16, // Matches the design's section title size
+                    fontSize: 16,
                     color: Colors.white,
                   ),
                 ),
                 Switch(
-                  value: false,
+                  value: isSmartSuggestionEnabled,
                   onChanged: (value) {
-                    // Handle switch logic
+                    setState(() {
+                      isSmartSuggestionEnabled = value;
+                    });
                   },
                   activeColor: Colors.white,
                   inactiveThumbColor: Colors.white70,
@@ -163,7 +176,7 @@ class CustomDialogExample extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const Spacer(),
 
             // Action Buttons
             Row(
@@ -174,7 +187,7 @@ class CustomDialogExample extends StatelessWidget {
                     // Handle delete action
                   },
                   child: CircleAvatar(
-                    radius: 25, // Matches the design's button size
+                    radius: 25,
                     backgroundColor: const Color(0xFF284366),
                     child:
                         const Icon(Icons.delete, color: Colors.white, size: 20),
@@ -185,7 +198,7 @@ class CustomDialogExample extends StatelessWidget {
                     // Handle edit action
                   },
                   child: CircleAvatar(
-                    radius: 25, // Matches the design's button size
+                    radius: 25,
                     backgroundColor: const Color(0xFF284366),
                     child:
                         const Icon(Icons.edit, color: Colors.white, size: 20),
