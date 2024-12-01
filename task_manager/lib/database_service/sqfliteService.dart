@@ -27,7 +27,7 @@ class SqfLiteService {
   }
 
   Future<Database> _initDB() async {
-    final path = join(await getDatabasesPath(), 'TaskManager6.db');
+    final path = join(await getDatabasesPath(), 'TaskManager7.db');
     return openDatabase(path, version: 1, onCreate: _createDB);
   }
 
@@ -95,7 +95,9 @@ class SqfLiteService {
         end_time TEXT NOT NULL,
         category TEXT NOT NULL,
         location TEXT,
-        is_smart_suggested INTEGER NOT NULL
+        repeat_id INTEGER,
+        is_smart_suggested INTEGER NOT NULL,
+        FOREIGN KEY (repeat_id) REFERENCES event_repetition(id) ON DELETE CASCADE ON UPDATE CASCADE
       )
     ''');
 
@@ -112,15 +114,13 @@ class SqfLiteService {
 
     await db.execute('''
       CREATE TABLE event_repetition(
-          event_id INTEGER,
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
           repeat_interval INTEGER NOT NULL,
           repeat_unit TEXT NOT NULL,
           repeat_type TEXT NOT NULL,
           repeat_until DATE,
           num_occurrence INTEGER,
-          repeat_on TEXT,
-          PRIMARY KEY(event_id),
-          FOREIGN KEY (event_id) REFERENCES event(id) ON DELETE CASCADE ON UPDATE CASCADE
+          repeat_on TEXT
       )
     ''');
     await db.insert('category', {"name": "To-Do"});
@@ -383,7 +383,6 @@ class SqfLiteService {
         await insertTask(task);
       }
     } else if (task.repeatPattern!.repeatType == "Time") {
-      final splitStopDate = task.repeatPattern!.repeatUntil!.split("-");
       final stopDate = DateTime.parse(task.date!);
 
       if (taskDate.isBefore(stopDate)) {
@@ -496,17 +495,88 @@ class SqfLiteService {
 
   Future<void> addEvent(Event event) async {
     final db = await database;
+    if (event.repeatPattern != null) {
+      event.repeatPattern!.repeatId =
+          await db.insert("event_repetition", event.repeatPattern!.toMap());
+    }
     event.id = await db.insert('event', event.toMap());
-  print("Event id: ${event.id}");
     if (event.reminders != null) {
       for (EventReminder reminder in event.reminders!) {
         reminder.eventId = event.id;
         db.insert("event_reminder", reminder.toMap());
       }
     }
+    print("Event inserted: $event");
     if (event.repeatPattern != null) {
-      event.repeatPattern!.eventId = event.id;
-      await db.insert("event_repetition", event.repeatPattern!.toMap());
+      print("Inserting repeated Events");
+      await insertRepeatedEvent(event);
+    }
+  }
+
+  Future<void> insertRepeatedEvent(Event event) async {
+    final db = await database;
+    bool insert = false;
+    List<String> repeatOn = [];
+    if (event.repeatPattern!.repeatOn != null) {
+      repeatOn = event.repeatPattern!.repeatOn!.split("/");
+    }
+    print("repeatOn: $repeatOn");
+    if (event.repeatPattern!.repeatType == "Time") {
+      while (event.startTime
+          .isBefore(DateTime.parse(event.repeatPattern!.repeatUntil!))) {
+        Duration eventDuration = event.endTime.difference(event.startTime);
+        event.startTime = _newEventTime(event.startTime, event.repeatPattern!);
+        event.endTime = event.startTime.add(eventDuration);
+        if (event.repeatPattern!.repeatUnit == "Week") {
+          if (repeatOn.isNotEmpty ||
+              repeatOn.contains(getWeekdayName(event.startTime))) {
+            insert = true;
+          }
+        } else if (event.repeatPattern!.repeatUnit == "Month") {
+          if (repeatOn.isNotEmpty ||
+              repeatOn.contains(event.startTime.day.toString())) {
+            insert = true;
+          }
+        } else if (event.repeatPattern!.repeatUnit == "Year") {
+          if (repeatOn.isNotEmpty ||
+              repeatOn.contains(getMonthName(event.startTime))) {
+            insert = true;
+          }
+        } else {
+          insert = true;
+        }
+        if (insert) {
+          event.id = await db.insert('event', event.toMap());
+          if (event.reminders != null) {
+            for (EventReminder reminder in event.reminders!) {
+              reminder.eventId = event.id;
+              db.insert("event_reminder", reminder.toMap());
+            }
+          }
+          print("Event inserted: $event");
+          insert = false;
+        }
+      }
+    } else {
+      late int i;
+      if (event.repeatPattern!.repeatType == "Count") {
+        i = event.repeatPattern!.numOccurrence!;
+        print("RepeatType Count: $i");
+      } else {
+        i = 100;
+      }
+      while (i > 0) {
+        Duration eventDuration = event.endTime.difference(event.startTime);
+        event.startTime = _newEventTime(event.startTime, event.repeatPattern!);
+        event.endTime = event.startTime.add(eventDuration);
+        event.id = await db.insert('event', event.toMap());
+        for (EventReminder reminder in event.reminders ?? []) {
+          reminder.eventId = event.id;
+          db.insert("event_reminder", reminder.toMap());
+        }
+        print("Event inserted: $event");
+        i--;
+      }
     }
   }
 
@@ -532,7 +602,8 @@ class SqfLiteService {
     }
 
     if (event.repeatPattern != null) {
-      event.repeatPattern!.eventId = event.id;
+      //modify repeated events
+      // event.repeatPattern!.eventId = event.id;
       await db.insert("event_repetition", event.repeatPattern!.toMap());
     }
   }
@@ -541,8 +612,8 @@ class SqfLiteService {
     final db = await database;
     final date1 = date.toIso8601String();
     final date2 = date.add(const Duration(days: 1)).toIso8601String();
-    final map =
-        await db.query('event', where: 'start_time >= ? AND start_time < ?', whereArgs: [date1,date2]);
+    final map = await db.query('event',
+        where: 'start_time >= ? AND start_time < ?', whereArgs: [date1, date2]);
     List<Event> events = List.generate(map.length, (index) {
       return Event.fromMap(map[index]);
     });
@@ -566,10 +637,7 @@ class SqfLiteService {
     final map = await db.query(
       'event',
       where: 'start_time >= ? AND start_time < ?',
-      whereArgs: [
-        formatDate(startOfWeek),
-        formatDate(endOfWeek)
-      ],
+      whereArgs: [formatDate(startOfWeek), formatDate(endOfWeek)],
     );
 
     // Map results to Event objects
@@ -585,7 +653,6 @@ class SqfLiteService {
 
     return events;
   }
-
 
   Future<List<Event>> getMonthlyEvents(DateTime date) async {
     // Calculate the start (first day) and end (last day) of the month
@@ -599,10 +666,7 @@ class SqfLiteService {
     final map = await db.query(
       'event',
       where: 'start_time >= ? AND start_time < ?',
-      whereArgs: [
-        formatDate(startOfMonth),
-        formatDate(endOfMonth)
-      ],
+      whereArgs: [formatDate(startOfMonth), formatDate(endOfMonth)],
     );
 
     // Map results to Event objects
@@ -618,7 +682,6 @@ class SqfLiteService {
 
     return events;
   }
-
 
   Future<List<EventReminder>?> getEventReminders(int eventId) async {
     final db = await database;
@@ -640,9 +703,9 @@ class SqfLiteService {
     return null;
   }
 
-  Future<Event> getEventById(int id)async{
+  Future<Event> getEventById(int id) async {
     final db = await database;
-    final map = await db.query("event" , where: "id = ?",whereArgs: [id]);
+    final map = await db.query("event", where: "id = ?", whereArgs: [id]);
     final event = Event.fromMap(map[0]);
     event.reminders = await getEventReminders(event.id!);
     event.repeatPattern = await getEventRepetition(event.id!);
@@ -666,6 +729,238 @@ DateTime _addTaskTime(DateTime taskTime, TaskRepetition repeatPattern) {
   }
 }
 
+DateTime _newEventTime(DateTime startTime, EventRepetition repeatPattern) {
+  if (repeatPattern.repeatUnit == "Hour") {
+    return startTime.add(Duration(hours: repeatPattern.repeatInterval));
+  } else if (repeatPattern.repeatUnit == "Day") {
+    return startTime.add(Duration(days: repeatPattern.repeatInterval));
+  } else if (repeatPattern.repeatUnit == "Week") {
+    List<int> repeatOn = [startTime.weekday];
+    if (repeatPattern.repeatOn != null) {
+      repeatOn = mapRepeatOnToDays(repeatPattern.repeatOn!);
+    }
+    int i = 0;
+    for (; i < repeatOn.length; i++) {
+      if (startTime.weekday < repeatOn[i]) {
+        break;
+      }
+    }
+    late int nextDayDuration;
+    if (i == repeatOn.length) {
+      nextDayDuration = 7 - (startTime.weekday - repeatOn[0]);
+      if (repeatPattern.repeatInterval > 1) {
+        nextDayDuration =
+            nextDayDuration + (repeatPattern.repeatInterval - 1) * 7;
+      }
+    } else {
+      nextDayDuration = repeatOn[i] - startTime.weekday;
+    }
+    return startTime.add(Duration(days: nextDayDuration));
+  } else if (repeatPattern.repeatUnit == "Month") {
+    List<int> repeatOn = [startTime.day];
+    if (repeatPattern.repeatOn != null) {
+      repeatOn = mapRepeatOnToMonthDates(repeatPattern.repeatOn!);
+    }
+    int i = 0;
+    for (; i < repeatOn.length; i++) {
+      if (startTime.day < repeatOn[i]) {
+        break;
+      }
+    }
+    while(true) {
+      DateTime newDate = startTime;
+      if (i == repeatOn.length) {
+        i = 0;
+        newDate = DateTime(
+            newDate.year,
+            newDate.month + repeatPattern.repeatInterval,
+            repeatOn[i],
+            newDate.hour,
+            newDate.minute
+        );
+      } else {
+        newDate = DateTime(
+            newDate.year,
+            newDate.month,
+            repeatOn[i],
+            newDate.hour,
+            newDate.minute
+        );
+      }
+
+      if (newDate.day != repeatOn[i]) {
+        newDate = DateTime(
+            newDate.year,
+            newDate.month,
+            0,
+            newDate.hour,
+            newDate.minute
+        );
+        i++;
+      }
+      else{
+        return newDate;
+      }
+    }
+  } else {
+    List<int> repeatOn = [startTime.month];
+    if (repeatPattern.repeatOn != null) {
+      repeatOn = mapRepeatOnToMonthNumbers(repeatPattern.repeatOn!);
+    }
+    int i = 0;
+    for (; i < repeatOn.length; i++) {
+      if (startTime.month < repeatOn[i]) {
+        break;
+      }
+    }
+    while(true) {
+      DateTime newDate = startTime;
+      if (i == repeatOn.length) {
+        i = 0;
+        newDate = DateTime(
+            newDate.year + repeatPattern.repeatInterval,
+            repeatOn[i],
+            startTime.day,
+            newDate.hour,
+            newDate.minute
+        );
+      } else {
+        newDate = DateTime(
+            newDate.year,
+            repeatOn[i],
+            startTime.day,
+            newDate.hour,
+            newDate.minute
+        );
+      }
+      if (newDate.day != startTime.day) {
+        newDate = DateTime(
+            newDate.year,
+            repeatOn[i],
+            startTime.day,
+            newDate.hour,
+            newDate.minute
+        );
+        i++;
+      }
+      else{
+        return newDate;
+      }
+    }
+  }
+}
+
 String formatDate(DateTime date) {
   return DateFormat('yyyy-MM-dd').format(date);
+}
+
+String getWeekdayName(DateTime date) {
+  // Map weekdays to names
+  const weekdayNames = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday'
+  ];
+
+  // DateTime.weekday starts from 1 (Monday) to 7 (Sunday)
+  return weekdayNames[date.weekday - 1];
+}
+
+String getMonthName(DateTime date) {
+  // Map months to names
+  const monthNames = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+  ];
+
+  // DateTime.month starts from 1 (January) to 12 (December)
+  return monthNames[date.month - 1];
+}
+
+List<int> mapRepeatOnToDays(String repeatOn) {
+  // Map of weekday names to their corresponding numbers
+  const Map<String, int> weekdayMap = {
+    'Monday': 1,
+    'Tuesday': 2,
+    'Wednesday': 3,
+    'Thursday': 4,
+    'Friday': 5,
+    'Saturday': 6,
+    'Sunday': 7,
+  };
+
+  // Split the repeatOn string by '/' and map each day to its number
+  List<String> days = repeatOn.split('/');
+  List<int> repeatDays = [];
+
+  for (String day in days) {
+    day = day.trim(); // Trim any whitespace
+    if (weekdayMap.containsKey(day)) {
+      repeatDays.add(weekdayMap[day]!);
+    }
+  }
+
+  return repeatDays;
+}
+
+List<int> mapRepeatOnToMonthDates(String repeatOn) {
+  // Split the repeatOn string by '/' and map each date to an integer
+  List<String> dateStrings = repeatOn.split('/');
+  List<int> monthDates = [];
+
+  for (String date in dateStrings) {
+    date = date.trim(); // Trim any whitespace
+    int? day = int.tryParse(date); // Convert to an integer
+    if (day != null && day > 0 && day <= 31) {
+      // Ensure valid month date
+      monthDates.add(day);
+    }
+  }
+
+  return monthDates;
+}
+
+List<int> mapRepeatOnToMonthNumbers(String repeatOn) {
+  // Map of month names to their corresponding numbers
+  const Map<String, int> monthMap = {
+    'January': 1,
+    'February': 2,
+    'March': 3,
+    'April': 4,
+    'May': 5,
+    'June': 6,
+    'July': 7,
+    'August': 8,
+    'September': 9,
+    'October': 10,
+    'November': 11,
+    'December': 12,
+  };
+
+  // Split the repeatOn string by '/' and map each month to its number
+  List<String> monthStrings = repeatOn.split('/');
+  List<int> monthNumbers = [];
+
+  for (String month in monthStrings) {
+    month = month.trim(); // Trim any whitespace
+    if (monthMap.containsKey(month)) {
+      monthNumbers.add(monthMap[month]!);
+    }
+  }
+
+  return monthNumbers;
 }

@@ -68,7 +68,8 @@ class _EventRepeatScreenState extends State<EventRepeatScreen> {
                 Navigator.pop(context , "Never");
               }
               else{
-                final optionSplit = selectedOption!.split(" ");
+                final optionSplit = selectedOption!.trim().split(" ");
+                print(optionSplit);
                 String? repeatOn;
                 if(optionSplit.length > 2){
                   repeatOn = optionSplit[3].replaceFirst(")", "");

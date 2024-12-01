@@ -121,7 +121,7 @@ class _CustomFrequencyPageState extends State<CustomFrequencyPage> {
       if(optionSplit.length > 2){
         List<String> repeatOn = optionSplit[3].replaceAll(")", "").split("/");
         if(selectedUnit == "Week"){
-          List<String> days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+          List<String> days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" , "Sunday"];
           for(int i =0 ; i < repeatOn.length ; i++){
             int index = days.indexOf(repeatOn[i]);
             selectedDays[index] = true;
@@ -190,7 +190,7 @@ class _CustomFrequencyPageState extends State<CustomFrequencyPage> {
               EventRepetition repeatPattern = EventRepetition(repeatInterval: selectedInterval, repeatUnit: selectedUnit);
               List<String> repeatOn = [];
               if(repeatPattern.repeatUnit == "Week"){
-                List<String> days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                List<String> days = [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" , "Sunday"];
                 for(int i =0 ; i < 7 ; i++){
                   if(selectedDays[i]){
                     repeatOn.add(days[i]);
@@ -385,7 +385,7 @@ class _CustomFrequencyPageState extends State<CustomFrequencyPage> {
   }
 
   Widget _buildDaySelector() {
-    List<String> days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
+    List<String> days = ['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat' , 'Sun'];
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,

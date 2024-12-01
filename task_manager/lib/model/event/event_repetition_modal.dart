@@ -1,5 +1,5 @@
 class EventRepetition{
-  int? eventId;
+  int? repeatId;
   int repeatInterval;
   String repeatUnit;
   String? repeatUntil;
@@ -12,13 +12,12 @@ class EventRepetition{
     this.repeatUntil,
     this.repeatType = "Never",
     this.numOccurrence,
-    this.eventId,
+    this.repeatId,
     this.repeatOn,
   });
 
   Map<String,dynamic> toMap(){
     return {
-      "event_id":eventId,
       "repeat_interval":repeatInterval,
       "repeat_unit":repeatUnit,
       "repeat_type": repeatType,
@@ -30,7 +29,7 @@ class EventRepetition{
 
   static EventRepetition fromMap(Map<String,dynamic> map){
     return EventRepetition(
-      eventId: map["event_id"],
+      repeatId: map["id"],
       repeatInterval: map["repeat_interval"],
       repeatUnit: map["repeat_unit"],
       repeatType:map['repeat_type'],

@@ -35,6 +35,7 @@ class Event {
       'end_time': endTime.toIso8601String(),
       'category': eventType,
       'location': location,
+      'repeat_id' : repeatPattern?.repeatId,
       'is_smart_suggested': smartSuggestion == true ? 1 : 0,
     };
   }

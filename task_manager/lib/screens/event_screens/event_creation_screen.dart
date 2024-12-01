@@ -171,8 +171,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               isAllDay = !isAllDay;
               if(_selectedStartTime != null){
                 _selectedStartTime = DateTime(
-                  _selectedStartTime!.month,
                   _selectedStartTime!.year,
+                  _selectedStartTime!.month,
                   _selectedStartTime!.day,
                 );
                 _selectedEndTime = _selectedStartTime!.add(Duration(days: 1));
