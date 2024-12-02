@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:last_attempt/classroom/create_class.dart';
+import 'package:last_attempt/classroom/perticularclass.dart';
 
 void main() {
   runApp(MyApp());
@@ -169,6 +170,10 @@ class ClassroomCard extends StatelessWidget {
       child: GestureDetector(
         onTap: (){
           print('lol $className');
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context)=> SoftwareEngineeringPage(classaName: className)),
+          );
         },
         child: Container(
           height: 65,

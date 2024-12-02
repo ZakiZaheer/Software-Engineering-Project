@@ -43,6 +43,28 @@ class _postState extends State<createPost> {
     'Poll','Material','Notice'
   ];
 
+  List<String> pollOptions = ['Yes', 'No'];
+
+  void _addOption() {
+    setState(() {
+      pollOptions.add('');
+    });
+  }
+
+  // Remove an option from the poll
+  void _removeOption(int index) {
+    setState(() {
+      pollOptions.removeAt(index);
+    });
+  }
+
+  // Update the text of an option
+  void _updateOption(String value, int index) {
+    setState(() {
+      pollOptions[index] = value;
+    });
+  }
+
 
   Future<void> _pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
@@ -66,7 +88,10 @@ class _postState extends State<createPost> {
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Color(0xFF091F40),
-          title: const Text('Create Post'),
+          title: const Text('Create Post',style: TextStyle(color: Colors.white),),
+          iconTheme: IconThemeData(
+            color: Colors.white, // White Back Arrow and Icons
+          ),
           actions: [
             // IconButton in the AppBar
             TextButton(
@@ -91,20 +116,24 @@ class _postState extends State<createPost> {
                 key: _formKey,
                 child: ListView(
                   children:  [
-                    Text("Post type"),
+                    Text("Post type",style: TextStyle(
+                    color: Colors.white)),
                     _PostsType(),
                     if (_selectedType=='Test')...[
                       SizedBox(height: 3),
-                      Text("Date of test"),
+                      Text("Date of test",style: TextStyle(
+                          color: Colors.white)),
                       SizedBox(height: 3),
                       dateandtimefield("DD-MM-YYYY"),
                       SizedBox(height: 3),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          Text('Start time'),
+                          Text('Start time',style: TextStyle(
+                              color: Colors.white)),
                           SizedBox(width: 100),
-                          Text('End time')
+                          Text('End time',style: TextStyle(
+                              color: Colors.white))
                         ],
                       ),
                       Row(
@@ -116,13 +145,15 @@ class _postState extends State<createPost> {
                         ],
                       ),
                       SizedBox(height: 3),
-                      Text("Description"),
+                      Text("Description",style: TextStyle(
+                          color: Colors.white)),
                       SizedBox(height: 3),
                       description('Write the description related to the test for like syllabus and units that are to be covered for the test...', _description)
                     ]
                     else if(_selectedType=='Assignment')...[
                       SizedBox(height: 3),
-                      Text("Due by"),
+                      Text("Due by",style: TextStyle(
+                          color: Colors.white)),
                       SizedBox(height: 3),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -132,22 +163,26 @@ class _postState extends State<createPost> {
                         ],
                       ),
                       SizedBox(height: 3),
-                      Text("Description"),
+                      Text("Description",style: TextStyle(
+                          color: Colors.white)),
                       SizedBox(height: 3),
                       description('Write the description related to the Assignment for like the questions of the exercise and examples to be.', _description)
                     ]
                     else if(_selectedType=='Class cancellation')...[
                         SizedBox(height: 3),
-                        Text("Date"),
+                        Text("Date",style: TextStyle(
+                            color: Colors.white)),
                         SizedBox(height: 3),
                         dateandtimefield("DD-MM-YYYY"),
                         SizedBox(height: 3),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Text('Start time'),
+                            Text('Start time',style: TextStyle(
+                                color: Colors.white)),
                             SizedBox(width: 100),
-                            Text('End time')
+                            Text('End time',style: TextStyle(
+                                color: Colors.white))
                           ],
                         ),
                         Row(
@@ -159,22 +194,26 @@ class _postState extends State<createPost> {
                           ],
                         ),
                         SizedBox(height: 3),
-                        Text("Description"),
+                        Text("Description",style: TextStyle(
+                            color: Colors.white)),
                         SizedBox(height: 3),
                         description('Write the description to state the reason leading to cancellation of the class.', _description)
                     ]
                     else if(_selectedType=='Exam')...[
                           SizedBox(height: 3),
-                          Text("Date of exam"),
+                          Text("Date of exam",style: TextStyle(
+                              color: Colors.white)),
                           SizedBox(height: 3),
                           dateandtimefield("DD-MM-YYYY"),
                           SizedBox(height: 3),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Text('Start time'),
+                              Text('Start time',style: TextStyle(
+                                  color: Colors.white)),
                               SizedBox(width: 100),
-                              Text('End time')
+                              Text('End time',style: TextStyle(
+                                  color: Colors.white))
                             ],
                           ),
                           Row(
@@ -186,25 +225,29 @@ class _postState extends State<createPost> {
                             ],
                           ),
                           SizedBox(height: 3),
-                          Text("Description"),
+                          Text("Description",style: TextStyle(
+                              color: Colors.white)),
                           SizedBox(height: 3),
                           description('Write the description related to the test for like syllabus and unit that are to be covered for the test...', _description)
                     ]
                     else if(_selectedType=='Material')...[
                             SizedBox(height: 3),
-                            Text("Title"),
+                            Text("Title",style: TextStyle(
+                                color: Colors.white)),
                             SizedBox(height: 3),
                             description('Enter title of the poll', _title),
                             SizedBox(height: 3),
-                            Text("Description"),
+                            Text("Description",style: TextStyle(
+                                color: Colors.white)),
                             SizedBox(height: 3),
                             description('Write the description related to the file attached.', _description),
                             SizedBox(height: 3),
                             Align(
                               alignment: Alignment.centerLeft,
                               child: TextButton.icon(
-                                icon: Icon(Icons.add),          // Icon for the button
-                                label: Text(filename),         // Text for the button
+                                icon: Icon(Icons.add,color: Colors.white,),          // Icon for the button
+                                label: Text(filename,style: TextStyle(
+                                    color: Colors.white)),         // Text for the button
                                 onPressed: () {
                                   _pickFile();
                                   print("Button pressed!");
@@ -214,17 +257,91 @@ class _postState extends State<createPost> {
                     ]
                     else if(_selectedType=="Notice")...[
                               SizedBox(height: 3),
-                              Text("Title"),
+                              Text("Title",style: TextStyle(
+                                  color: Colors.white)),
                               SizedBox(height: 3),
                               description('Enter title', _title),
                               SizedBox(height: 3),
-                              Text("Description"),
+                              Text("Description",style: TextStyle(
+                                  color: Colors.white)),
                               SizedBox(height: 3),
                               description('Write the description for the notice', _description),
                     ]
-                    else if(_selectedType=='Poll')...[
+                            else if (_selectedType == 'Poll') ...[
+                                const SizedBox(height: 5),
+                                const Text(
+                                  "Title",
+                                  style: TextStyle(color: Colors.white),
+                                ),
 
-                    ]
+                                description('Enter the title of the poll', _title),
+                                const SizedBox(height: 5),
+                                const Text(
+                                  "Description",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                const SizedBox(height: 8),
+                                description(
+                                  'Write the description for the poll (optional)',
+                                  _description,
+                                ),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  "Options",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                const SizedBox(height: 8),
+                                ...pollOptions.asMap().entries.map((entry) {
+                                  int index = entry.key;
+                                  String option = entry.value;
+
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                    child: Row(
+                                      children: [
+                                        Radio<int>(
+                                          value: index,
+                                          groupValue: null, // Can be updated for selection handling.
+                                          onChanged: (int? value) {
+                                            // Logic to handle radio selection (if needed).
+                                          },
+                                          activeColor: Colors.white,
+                                        ),
+                                        Expanded(
+                                          child: TextFormField(
+                                            initialValue: option,
+                                            onChanged: (value) => _updateOption(value, index),
+                                            style: const TextStyle(color: Colors.white),
+                                            decoration: InputDecoration(
+                                              hintText: "Option ${index + 1}",
+                                              hintStyle: const TextStyle(color: Colors.grey),
+                                              filled: true,
+                                              fillColor: Colors.transparent, // Custom background for input
+
+                                              contentPadding:
+                                              EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                              border: InputBorder.none,
+                                            ),
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete, color: Colors.red),
+                                          onPressed: () => _removeOption(index),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: TextButton.icon(
+                                    icon: const Icon(Icons.add, color: Colors.white),
+                                    label: const Text("Add an option", style: TextStyle(color: Colors.white)),
+                                    onPressed: _addOption,
+                                  ),
+                                ),
+                              ]
+
                   ],
                 )
             ),
@@ -309,7 +426,7 @@ class _postState extends State<createPost> {
               decoration: InputDecoration(
                 hintText: hintText,
                 hintStyle: TextStyle(color: Colors.grey),
-                suffixIcon: Icon(Icons.watch_later_outlined),
+                suffixIcon: Icon(Icons.watch_later_outlined,color: Colors.white,),
                 contentPadding:
                 EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 border: InputBorder.none,
@@ -366,7 +483,7 @@ class _postState extends State<createPost> {
               decoration: InputDecoration(
                 hintText: hintText,
                 hintStyle: TextStyle(color: Colors.grey),
-                suffixIcon: Icon(Icons.calendar_month),
+                suffixIcon: Icon(Icons.calendar_month,color: Colors.white,),
                 contentPadding:
                 EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 border: InputBorder.none,
@@ -427,6 +544,10 @@ class _postState extends State<createPost> {
                   hintStyle: TextStyle(color: Colors.grey),
                   contentPadding: EdgeInsets.symmetric(horizontal: 16),
                   border: InputBorder.none,
+                ),
+                style: TextStyle(
+                  color: Colors.white, // Set the color of the selected text
+                  fontSize: 16,       // Optional: Adjust font size
                 ),
                 items: _postTypes.map((String type) {
                   return DropdownMenuItem<String>(

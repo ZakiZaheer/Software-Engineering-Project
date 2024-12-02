@@ -27,6 +27,9 @@ class _CreateClassPageState extends State<CreateClassPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        iconTheme: IconThemeData(
+          color: Colors.white, // Set back arrow color to white
+        ),
         backgroundColor: Color(0xFF091F40),
         title: const Text('Create Class',style: TextStyle(color: Colors.white),),
         actions: [
