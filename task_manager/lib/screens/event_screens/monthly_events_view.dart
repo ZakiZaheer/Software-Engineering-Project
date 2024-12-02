@@ -1,20 +1,8 @@
 import 'package:flutter/material.dart';
-import 'customWidgets/event_details.dart';
-
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: CalendarScreen(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
+import 'package:task_manager/customWidgets/footer.dart';
+import 'package:task_manager/database_service/sqfliteService.dart';
+import '../../model/event/event_modal.dart';
+import '/../../customWidgets/event_details.dart';
 
 class CalendarScreen extends StatefulWidget {
   @override
@@ -25,7 +13,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
   int _currentMonth = DateTime.now().month;
-
+  final db = SqfLiteService();
   final List<String> _months = [
     'January',
     'February',
@@ -41,40 +29,48 @@ class _CalendarScreenState extends State<CalendarScreen> {
     'December'
   ];
 
-  final Map<DateTime, List<Map<String, dynamic>>> _events = {
-    DateTime(2024, 11, 23): [
-      {
-        "title": "Event 1",
-        "date": "23 November 2024",
-        "description": "This is a description of Event 1.",
-        "color": Colors.orange,
-      },
-      {
-        "title": "Event 2",
-        "date": "23 November 2024",
-        "description": "This is a description of Event 2.",
-        "color": Colors.blue,
-      },
-    ],
-    DateTime(2024, 11, 25): [
-      {
-        "title": "Meeting",
-        "date": "25 November 2024",
-        "description": "Team meeting at 10 AM.",
-        "color": Colors.purple,
-      },
-    ],
-  };
+  Future<Map<DateTime, List<Event>>> generateEventsForMonth(int year, int month) async {
+    Map<DateTime, List<Event>> events = {};
+    // Get the number of days in the specified month
+    DateTime firstDayOfMonth = DateTime(year, month, 1);
+    DateTime firstDayOfNextMonth = DateTime(year, month + 1, 1);
+    int daysInMonth = firstDayOfNextMonth.difference(firstDayOfMonth).inDays;
 
+    for (int day = 1; day <= daysInMonth; day++) {
+      DateTime currentDate = DateTime(year, month, day);
+      List<Event>  currentEvents= await db.getDailyEvents(currentDate);
+      events[currentDate] = currentEvents;
+    }
+
+    return events;
+  }
+
+  Map<DateTime,List<Event>> _events = {};
+
+
+
+  Future<void> loadEvents()async{
+    _events = await generateEventsForMonth(2024, 11);
+    setState(() {
+
+    });
+  }
+
+
+  @override
+  void initState() {
+    loadEvents();
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF0A1A2A),
+      backgroundColor:const  Color(0xFF0A1A2A),
       appBar: AppBar(
-        backgroundColor: Color(0xFF0A1329),
+        backgroundColor:const  Color(0xFF0A1329),
         elevation: 0,
         leading: PopupMenuButton<String>(
-          color: Color(0xFF0A1A2A),
+          color:const Color(0xFF0A1A2A),
           icon: const Icon(Icons.menu, color: Colors.white),
           onSelected: (value) {
             if (value == "Calendar View") {
@@ -133,15 +129,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(onPressed: (){},child: Icon(Icons.add),),
+      bottomNavigationBar: const MainFooter(index: 1),
     );
   }
 
   Widget _buildWeekdaysRow() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: const [
+        children: [
           Expanded(
               child: Center(
                   child: Text("S",
@@ -220,7 +218,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  if (_events[currentDate] != null)
+                  if (_events[currentDate] != null) //change
                     Flexible(
                       child: ListView(
                         shrinkWrap: true,
@@ -230,14 +228,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             margin: const EdgeInsets.only(top: 2.0),
                             padding: const EdgeInsets.symmetric(vertical: 2.0),
                             decoration: BoxDecoration(
-                              color: event['color'].withOpacity(0.2),
+                              color: _getEventColor(event.eventType).withOpacity(0.2), //change
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              event['title'],
+                              event.title, //change
                               style: TextStyle(
                                 fontSize: 10,
-                                color: event['color'],
+                                color: _getEventColor(event.eventType), //change
                                 overflow: TextOverflow.ellipsis,
                               ),
                               textAlign: TextAlign.center,
@@ -280,9 +278,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       showDialog(
                         context: context,
                         builder: (context) => CustomDialogExample(
-                          eventTitle: event['title'],
-                          eventDate: event['date'],
-                          description: event['description'],
+                          eventTitle: event.title, //change
+                          eventDate: event.startTime.toIso8601String(), //change
+                          description: event.description ?? "No Description", //change
                         ),
                       );
                     },
@@ -291,14 +289,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16.0, vertical: 12.0),
                       decoration: BoxDecoration(
-                        color: event['color'].withOpacity(0.2),
-                        border: Border.all(color: event['color']),
+                        color: _getEventColor(event.eventType).withOpacity(0.2),
+                        border: Border.all(color: _getEventColor(event.eventType)),
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                       child: Text(
-                        event['title'],
+                        event.title,
                         style: TextStyle(
-                          color: event['color'],
+                          color: _getEventColor(event.eventType),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -319,14 +317,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Color(0xFF0A1A2A),
+      backgroundColor: const Color(0xFF0A1A2A),
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
             return Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFF0A1A2A),
-                borderRadius: const BorderRadius.vertical(
+              decoration:const  BoxDecoration(
+                color: Color(0xFF0A1A2A),
+                borderRadius: BorderRadius.vertical(
                   top: Radius.circular(16.0),
                 ),
               ),
@@ -523,5 +521,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   int _daysInMonth(int year, int month) {
     return DateTime(year, month + 1, 0).day;
+  }
+}
+
+
+_getEventColor(String type){
+  if(type == "General"){
+    return Colors.yellow;
+  }
+  else if(type == "Birthday"){
+    return Colors.purple;
+  }
+  else if(type == "Anniversary"){
+    return Colors.green;
+  }
+  else{
+    return Colors.blue;
   }
 }

@@ -9,6 +9,7 @@ import 'package:task_manager/screens/event_screens/event_modification_screen.dar
 import 'package:task_manager/screens/event_screens/event_reminder.dart';
 import 'package:task_manager/screens/event_screens/event_repeat_screen.dart';
 import 'package:task_manager/screens/event_screens/event_stop_repeat_screen.dart';
+import 'package:task_manager/screens/event_screens/monthly_events_view.dart';
 import 'package:task_manager/screens/login_screens/SignUpScreen.dart';
 import 'package:task_manager/screens/login_screens/splashScrren.dart';
 import 'package:task_manager/screens/event_screens/daily_event_view.dart';
@@ -75,7 +76,7 @@ class MyApp extends StatelessWidget {
         '/taskRepeatUntilScreen' : (context) => TaskRepeatUntilScreen(repeatPattern: ModalRoute.of(context)!.settings.arguments as TaskRepetition?,),
         '/taskRemindersScreen' : (context) => TaskRemindersScreen(reminders: ModalRoute.of(context)!.settings.arguments as List<TaskReminder>?,),
         '/taskModificationScreen' : (context) => TaskModificationScreen(task: ModalRoute.of(context)!.settings.arguments as Task),
-        '/eventScreen' : (context) => const EventScreen(),
+        '/eventScreen' : (context) => CalendarScreen(),
         '/eventCreationScreen' : (context) => EventCreationScreen(),
         '/eventRepeatScreen' : (context) => EventRepeatScreen(repeatPattern: ModalRoute.of(context)!.settings.arguments as EventRepetition?,),
         '/eventRepeatUntilScreen' : (context) => EventRepeatUntilScreen(repeatPattern: ModalRoute.of(context)!.settings.arguments as EventRepetition?,),

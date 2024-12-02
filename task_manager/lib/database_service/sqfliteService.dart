@@ -620,7 +620,7 @@ class SqfLiteService {
 
     for (Event event in events) {
       event.reminders = await getEventReminders(event.id!);
-      event.repeatPattern = await getEventRepetition(event.id!);
+      // event.repeatPattern = await getEventRepetition(event.id!);
     }
     return events;
   }
