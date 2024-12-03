@@ -16,7 +16,8 @@ void workManagerCallbackDispatcher() async {
 
     String textToSpeak = inputData!['title'] ?? "Hello Human!";
     String? notificationDescription = inputData['body'];
-    await NotificationService.instantNotification(textToSpeak, notificationDescription!);
+    String type = inputData['type'];
+    await NotificationService.instantNotification(textToSpeak, notificationDescription!,type);
     FlutterTts tts = FlutterTts();
     await tts.setVolume(1.0);
     Completer<void> ttsCompleter = Completer<void>();
@@ -99,7 +100,8 @@ class WorkManagerService {
           initialDelay: initialDelay, // Calculated delay
           inputData: {
             'title': task.title,
-            'body' : task.description ?? ""// Text to speak
+            'body' : task.description ?? "",// Text to speak
+            'type' : 'task',
           },
         );
       }
@@ -165,7 +167,8 @@ class WorkManagerService {
           initialDelay: initialDelay, // Calculated delay
           inputData: {
             'title': event.title,
-            'body' : event.description ?? ""// Text to speak
+            'body' : event.description ?? "", // Text to speak
+            'type' : event.eventType,
           },
         );
       }

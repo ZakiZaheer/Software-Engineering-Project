@@ -166,11 +166,11 @@ class NotificationService {
   static Future<void> scheduleEventDefaultReminder(Event event) async {
     print("Scheduling Event Default Reminders");
     BigPictureStyleInformation? bigPictureStyleInformation;
-    if (event.eventType == "Birthday" || event.eventType == "Anniversary") {
+    if ((event.eventType == "Birthday" || event.eventType == "Anniversary") && event.smartSuggestion) {
       bigPictureStyleInformation = BigPictureStyleInformation(
-        DrawableResourceAndroidBitmap('${event.eventType == "Birthday" ? 'birthday' : 'annibersary'}'),
+        DrawableResourceAndroidBitmap('@mipmap/${event.eventType == "Birthday" ? "birthday" : "anniversary"}'),
         // Replace with your image name
-        largeIcon: DrawableResourceAndroidBitmap('app_icon'),
+        largeIcon: DrawableResourceAndroidBitmap('@mipmap/${event.eventType == "Birthday" ? "birthday" : "anniversary"}'),
         contentTitle: 'Wish Happy  ${event.eventType == "Birthday" ? 'birthday' : "anniversary"} to ${event.title}',
         summaryText: 'Click to share',
       );
@@ -197,15 +197,16 @@ class NotificationService {
     vibrationPattern[2] = 5000;
     vibrationPattern[3] = 2000;
     BigPictureStyleInformation? bigPictureStyleInformation;
-    if (event.eventType == "Birthday" || event.eventType == "Anniversary") {
+    if ((event.eventType == "Birthday" || event.eventType == "Anniversary") && event.smartSuggestion) {
       bigPictureStyleInformation = BigPictureStyleInformation(
-        DrawableResourceAndroidBitmap('${event.eventType == "Birthday" ? 'birthday' : 'annibersary'}'),
+        DrawableResourceAndroidBitmap('@mipmap/${event.eventType == "Birthday" ? "birthday" : "anniversary"}'),
         // Replace with your image name
-        largeIcon: DrawableResourceAndroidBitmap('app_icon'),
+        largeIcon: DrawableResourceAndroidBitmap('@mipmap/${event.eventType == "Birthday" ? "birthday" : "anniversary"}'),
         contentTitle: 'Wish Happy  ${event.eventType == "Birthday" ? 'birthday' : "anniversary"} to ${event.title}',
         summaryText: 'Click to share',
       );
     }
+
     NotificationDetails notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
         'BeBetter_sound',
@@ -261,7 +262,7 @@ class NotificationService {
 
       // Schedule notification if reminder time is in the future
       if (reminderTime.isAfter(DateTime.now())) {
-        print("Reminder Scheduled For $eventStartTime");
+        print("Reminder Scheduled For $reminderTime");
         await notificationsPlugin.zonedSchedule(
           (event.id! * 100 + i),
           event.title,
@@ -280,6 +281,7 @@ class NotificationService {
   static Future<void> instantNotification(
     String title,
     String body,
+      String type,
   ) async {
     final Int64List vibrationPattern = Int64List(4);
     vibrationPattern[0] = 0;
@@ -287,11 +289,11 @@ class NotificationService {
     vibrationPattern[2] = 5000;
     vibrationPattern[3] = 2000;
     BigPictureStyleInformation? bigPictureStyleInformation;
-    if(title == "gay"){
+    if((type == "Birthday" || type == "Anniversary")){
       bigPictureStyleInformation = BigPictureStyleInformation(
-        DrawableResourceAndroidBitmap('@mipmap/anniversary'),
+        DrawableResourceAndroidBitmap('@mipmap/${type == "Birthday" ? "birthday" : "anniversary"}'),
         // Replace with your image name
-        largeIcon: DrawableResourceAndroidBitmap('@mipmap/birthday'),
+        largeIcon: DrawableResourceAndroidBitmap('@mipmap/${type == "Birthday" ? "birthday" : "anniversary"}'),
         contentTitle: 'Notification with Image',
         summaryText: 'This is an example of a notification with an image.',
       );
