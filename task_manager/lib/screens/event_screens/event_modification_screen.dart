@@ -30,7 +30,6 @@ class _EventModificationScreenState extends State<EventModificationScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   String _selectedReminderType = "Default";
   final db = SqfLiteService();
-
   @override
   void initState() {
     event = widget.event;
@@ -71,8 +70,14 @@ class _EventModificationScreenState extends State<EventModificationScreen> {
                     if (_descriptionController.text.isNotEmpty) {
                       event.description = _descriptionController.text;
                     }
+                    else{
+                      event.description = null;
+                    }
                     if (_locationController.text.isNotEmpty) {
                       event.location = _locationController.text;
+                    }
+                    else{
+                      event.location = null;
                     }
                     if(event.reminders != null){
                       for(EventReminder reminder in event.reminders!){
@@ -83,7 +88,7 @@ class _EventModificationScreenState extends State<EventModificationScreen> {
                       event.repeatPattern = EventRepetition(repeatInterval: 1, repeatUnit: "Year");
                     }
                     await db.modifyEvent(event);
-                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/eventScreen');
                   }
                   else{
                     _showErrorDialog(context, "EndTime Not Selected!");

@@ -8,6 +8,7 @@ import 'package:task_manager/screens/event_screens/event_creation_screen.dart';
 import 'package:task_manager/screens/event_screens/event_modification_screen.dart';
 import 'package:task_manager/screens/event_screens/event_reminder.dart';
 import 'package:task_manager/screens/event_screens/event_repeat_screen.dart';
+import 'package:task_manager/screens/event_screens/event_set_reminder.dart';
 import 'package:task_manager/screens/event_screens/event_stop_repeat_screen.dart';
 import 'package:task_manager/screens/event_screens/monthly_events_view.dart';
 import 'package:task_manager/screens/login_screens/SignUpScreen.dart';
@@ -81,6 +82,7 @@ class MyApp extends StatelessWidget {
         '/eventRepeatScreen' : (context) => EventRepeatScreen(repeatPattern: ModalRoute.of(context)!.settings.arguments as EventRepetition?,),
         '/eventRepeatUntilScreen' : (context) => EventRepeatUntilScreen(repeatPattern: ModalRoute.of(context)!.settings.arguments as EventRepetition?,),
         '/eventRemindersScreen' : (context) => EventRemindersScreen(reminders: ModalRoute.of(context)!.settings.arguments as List<EventReminder>?,),
+        '/eventSetRemindersScreen' : (context) => EventSetRemindersScreen(event: ModalRoute.of(context)!.settings.arguments as Event,),
         '/eventModificationScreen' : (context) => EventModificationScreen(event: ModalRoute.of(context)!.settings.arguments as Event),
         '/classroomSplashScreen' : (context) => const SplashScreen(),
         '/signUpScreen' : (context) => SignUpPage(),

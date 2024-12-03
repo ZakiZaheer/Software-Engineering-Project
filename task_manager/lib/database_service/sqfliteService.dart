@@ -27,7 +27,7 @@ class SqfLiteService {
   }
 
   Future<Database> _initDB() async {
-    final path = join(await getDatabasesPath(), 'TaskManager7.db');
+    final path = join(await getDatabasesPath(), 'TaskManager12.db');
     return openDatabase(path, version: 1, onCreate: _createDB);
   }
 
@@ -496,72 +496,42 @@ class SqfLiteService {
   Future<void> addEvent(Event event) async {
     final db = await database;
     if (event.repeatPattern != null) {
-      event.repeatPattern!.repeatId =
+      event.repeatId =
           await db.insert("event_repetition", event.repeatPattern!.toMap());
     }
     event.id = await db.insert('event', event.toMap());
     if (event.reminders != null) {
       for (EventReminder reminder in event.reminders!) {
         reminder.eventId = event.id;
-        db.insert("event_reminder", reminder.toMap());
+        await db.insert("event_reminder", reminder.toMap());
       }
     }
-    print("Event inserted: $event");
-    if (event.repeatPattern != null) {
-      print("Inserting repeated Events");
+    if (event.repeatId != null) {
       await insertRepeatedEvent(event);
     }
   }
 
   Future<void> insertRepeatedEvent(Event event) async {
     final db = await database;
-    bool insert = false;
-    List<String> repeatOn = [];
-    if (event.repeatPattern!.repeatOn != null) {
-      repeatOn = event.repeatPattern!.repeatOn!.split("/");
-    }
-    print("repeatOn: $repeatOn");
     if (event.repeatPattern!.repeatType == "Time") {
-      while (event.startTime
-          .isBefore(DateTime.parse(event.repeatPattern!.repeatUntil!))) {
+      while (true) {
         Duration eventDuration = event.endTime.difference(event.startTime);
         event.startTime = _newEventTime(event.startTime, event.repeatPattern!);
-        event.endTime = event.startTime.add(eventDuration);
-        if (event.repeatPattern!.repeatUnit == "Week") {
-          if (repeatOn.isNotEmpty ||
-              repeatOn.contains(getWeekdayName(event.startTime))) {
-            insert = true;
-          }
-        } else if (event.repeatPattern!.repeatUnit == "Month") {
-          if (repeatOn.isNotEmpty ||
-              repeatOn.contains(event.startTime.day.toString())) {
-            insert = true;
-          }
-        } else if (event.repeatPattern!.repeatUnit == "Year") {
-          if (repeatOn.isNotEmpty ||
-              repeatOn.contains(getMonthName(event.startTime))) {
-            insert = true;
-          }
-        } else {
-          insert = true;
+        if(event.startTime
+            .isAfter(DateTime.parse(event.repeatPattern!.repeatUntil!))){
+          break;
         }
-        if (insert) {
-          event.id = await db.insert('event', event.toMap());
-          if (event.reminders != null) {
-            for (EventReminder reminder in event.reminders!) {
-              reminder.eventId = event.id;
-              db.insert("event_reminder", reminder.toMap());
-            }
-          }
-          print("Event inserted: $event");
-          insert = false;
+        event.endTime = event.startTime.add(eventDuration);
+        event.id = await db.insert('event', event.toMap());
+        for (EventReminder reminder in event.reminders ?? []) {
+          reminder.eventId = event.id;
+          await db.insert("event_reminder", reminder.toMap());
         }
       }
     } else {
       late int i;
       if (event.repeatPattern!.repeatType == "Count") {
         i = event.repeatPattern!.numOccurrence!;
-        print("RepeatType Count: $i");
       } else {
         i = 100;
       }
@@ -574,112 +544,72 @@ class SqfLiteService {
           reminder.eventId = event.id;
           db.insert("event_reminder", reminder.toMap());
         }
-        print("Event inserted: $event");
         i--;
       }
     }
   }
 
-  Future<void> deleteEvent(Event id) async {
+  Future<void> deleteEvent(Event event) async {
     final db = await database;
-    await db.delete("event", where: "id = ?", whereArgs: [id]);
+    if(event.repeatId!=null){
+      await db.delete("event_repetition", where: "id = ?", whereArgs: [event.repeatId]);
+      await db.delete("event" ,where: "repeat_id = ?", whereArgs: [event.repeatId]);
+    }
+    else{
+      print("Deleting nonREpeated Event");
+      await db.delete("event", where: "id = ?", whereArgs: [event.id!]);
+    }
   }
 
   Future<void> modifyEvent(Event event) async {
     final db = await database;
-    await db.update("event", event.toMap(),
-        where: "id = ?", whereArgs: [event.id!]);
-    await db.delete("event_repetition",
-        where: "event_id = ?", whereArgs: [event.id!]);
-    await db.delete("event_reminder",
-        where: "event_id = ?", whereArgs: [event.id!]);
+    if(event.repeatId != null){
+      await deleteRepeatedEvent(event);
+      await addEvent(event);
+    }
+    else{
+      if(event.repeatPattern != null){
+        event.repeatId = await db.insert("event_repetition", event.repeatPattern!.toMap());
+      }
+      await db.update("event", event.toMap(),
+          where: "id = ?", whereArgs: [event.id!]);
 
-    if (event.reminders != null) {
-      for (EventReminder reminder in event.reminders!) {
-        reminder.eventId = event.id;
-        await db.insert("event_reminder", reminder.toMap());
+      await db.delete("event_reminder",
+          where: "event_id = ?", whereArgs: [event.id!]);
+
+      if (event.reminders != null) {
+        for (EventReminder reminder in event.reminders!) {
+          reminder.eventId = event.id;
+          await db.insert("event_reminder", reminder.toMap());
+        }
+      }
+      if(event.repeatId!= null){
+        await insertRepeatedEvent(event);
       }
     }
 
-    if (event.repeatPattern != null) {
-      //modify repeated events
-      // event.repeatPattern!.eventId = event.id;
-      await db.insert("event_repetition", event.repeatPattern!.toMap());
-    }
+
+
   }
 
   Future<List<Event>> getDailyEvents(DateTime date) async {
     final db = await database;
-    final date1 = date.toIso8601String();
-    final date2 = date.add(const Duration(days: 1)).toIso8601String();
+    final date1 = date.toString();
+    final date2 = date.add(const Duration(days: 1)).toString();
     final map = await db.query('event',
-        where: 'start_time >= ? AND start_time < ?', whereArgs: [date1, date2]);
+        where: 'start_time < ? AND end_time >= ?', whereArgs: [date2, date1]);
     List<Event> events = List.generate(map.length, (index) {
       return Event.fromMap(map[index]);
     });
 
     for (Event event in events) {
       event.reminders = await getEventReminders(event.id!);
-      // event.repeatPattern = await getEventRepetition(event.id!);
+      if(event.repeatId != null){
+        event.repeatPattern = await getEventRepetition(event.repeatId!);
+      }
+      print(event);
+
     }
-    return events;
-  }
-
-  Future<List<Event>> getWeeklyEvents(DateTime date) async {
-    // Calculate the start (Monday) and end (Sunday) of the week
-    final startOfWeek = date.subtract(Duration(days: date.weekday - 1));
-    final endOfWeek = startOfWeek.add(const Duration(days: 7));
-
-    // Ensure your database uses proper date formats
-    final db = await database;
-
-    // Query the database for events in the week range
-    final map = await db.query(
-      'event',
-      where: 'start_time >= ? AND start_time < ?',
-      whereArgs: [formatDate(startOfWeek), formatDate(endOfWeek)],
-    );
-
-    // Map results to Event objects
-    List<Event> events = List.generate(map.length, (index) {
-      return Event.fromMap(map[index]);
-    });
-
-    // Fetch associated reminders and repetition patterns
-    for (Event event in events) {
-      event.reminders = await getEventReminders(event.id!);
-      event.repeatPattern = await getEventRepetition(event.id!);
-    }
-
-    return events;
-  }
-
-  Future<List<Event>> getMonthlyEvents(DateTime date) async {
-    // Calculate the start (first day) and end (last day) of the month
-    final startOfMonth = DateTime(date.year, date.month, 1);
-    final endOfMonth = DateTime(date.year, date.month + 1, 1);
-
-    // Ensure your database uses proper date formats
-    final db = await database;
-
-    // Query the database for events in the month range
-    final map = await db.query(
-      'event',
-      where: 'start_time >= ? AND start_time < ?',
-      whereArgs: [formatDate(startOfMonth), formatDate(endOfMonth)],
-    );
-
-    // Map results to Event objects
-    List<Event> events = List.generate(map.length, (index) {
-      return Event.fromMap(map[index]);
-    });
-
-    // Fetch associated reminders and repetition patterns
-    for (Event event in events) {
-      event.reminders = await getEventReminders(event.id!);
-      event.repeatPattern = await getEventRepetition(event.id!);
-    }
-
     return events;
   }
 
@@ -693,10 +623,10 @@ class SqfLiteService {
     return reminders.isNotEmpty ? reminders : null;
   }
 
-  Future<EventRepetition?> getEventRepetition(int eventId) async {
+  Future<EventRepetition?> getEventRepetition(int id) async {
     final db = await database;
     List<Map<String, dynamic>> map = await db
-        .query('event_repetition', where: 'event_id = ?', whereArgs: [eventId]);
+        .query('event_repetition', where: 'id = ?', whereArgs: [id]);
     if (map.isNotEmpty) {
       return EventRepetition.fromMap(map[0]);
     }
@@ -711,7 +641,22 @@ class SqfLiteService {
     event.repeatPattern = await getEventRepetition(event.id!);
     return event;
   }
+
+  Future<void> toggleSmartSuggestion(Event event) async {
+    final db = await database;
+    await db.update(
+        'event', {'is_smart_suggested': event.smartSuggestion == true ? 0 : 1},
+        where: 'id = ?', whereArgs: [event.id!]);
+  }
+
+  Future<void> deleteRepeatedEvent(Event event)async{
+    final db = await database;
+    await db.delete('event' ,where: 'repeat_id = ? AND start_time >= ?' ,   whereArgs: [event.repeatId , event.startTime.toIso8601String()]);
+    await db.delete('event' , where: 'id = ?',whereArgs: [event.id!]);
+  }
 }
+
+
 
 DateTime _addTaskTime(DateTime taskTime, TaskRepetition repeatPattern) {
   if (repeatPattern.repeatUnit == "Hour") {
@@ -767,8 +712,8 @@ DateTime _newEventTime(DateTime startTime, EventRepetition repeatPattern) {
         break;
       }
     }
-    while(true) {
-      DateTime newDate = startTime;
+    DateTime newDate = startTime;
+    while (true) {
       if (i == repeatOn.length) {
         i = 0;
         newDate = DateTime(
@@ -776,29 +721,17 @@ DateTime _newEventTime(DateTime startTime, EventRepetition repeatPattern) {
             newDate.month + repeatPattern.repeatInterval,
             repeatOn[i],
             newDate.hour,
-            newDate.minute
-        );
+            newDate.minute);
       } else {
-        newDate = DateTime(
-            newDate.year,
-            newDate.month,
-            repeatOn[i],
-            newDate.hour,
-            newDate.minute
-        );
+        newDate = DateTime(newDate.year, newDate.month, repeatOn[i],
+            newDate.hour, newDate.minute);
       }
 
       if (newDate.day != repeatOn[i]) {
         newDate = DateTime(
-            newDate.year,
-            newDate.month,
-            0,
-            newDate.hour,
-            newDate.minute
-        );
-        i++;
-      }
-      else{
+            newDate.year, newDate.month, 0, newDate.hour, newDate.minute);
+        i = (i + 1) % (repeatOn.length + 1);
+      } else {
         return newDate;
       }
     }
@@ -807,43 +740,29 @@ DateTime _newEventTime(DateTime startTime, EventRepetition repeatPattern) {
     if (repeatPattern.repeatOn != null) {
       repeatOn = mapRepeatOnToMonthNumbers(repeatPattern.repeatOn!);
     }
+    print("RepeatOn: $repeatOn");
     int i = 0;
     for (; i < repeatOn.length; i++) {
       if (startTime.month < repeatOn[i]) {
         break;
       }
     }
-    while(true) {
-      DateTime newDate = startTime;
+    DateTime newDate = startTime;
+    while (true) {
+
       if (i == repeatOn.length) {
         i = 0;
-        newDate = DateTime(
-            newDate.year + repeatPattern.repeatInterval,
-            repeatOn[i],
-            startTime.day,
-            newDate.hour,
-            newDate.minute
-        );
+        newDate = DateTime(newDate.year + repeatPattern.repeatInterval,
+            repeatOn[i], startTime.day, newDate.hour, newDate.minute);
       } else {
-        newDate = DateTime(
-            newDate.year,
-            repeatOn[i],
-            startTime.day,
-            newDate.hour,
-            newDate.minute
-        );
+        newDate = DateTime(newDate.year, repeatOn[i], startTime.day,
+            newDate.hour, newDate.minute);
       }
       if (newDate.day != startTime.day) {
-        newDate = DateTime(
-            newDate.year,
-            repeatOn[i],
-            startTime.day,
-            newDate.hour,
-            newDate.minute
-        );
-        i++;
-      }
-      else{
+        newDate = DateTime(newDate.year, repeatOn[i], startTime.day,
+            newDate.hour, newDate.minute);
+        i = (i + 1) % (repeatOn.length + 1);
+      } else {
         return newDate;
       }
     }

@@ -10,6 +10,7 @@ class Event {
   String eventType;
   String? location;
   bool smartSuggestion;
+  int? repeatId;
   EventRepetition? repeatPattern;
   List<EventReminder>? reminders;
 
@@ -23,6 +24,7 @@ class Event {
     this.location,
     this.smartSuggestion = false,
     this.repeatPattern,
+    this.repeatId,
     this.reminders,
   });
 
@@ -35,7 +37,7 @@ class Event {
       'end_time': endTime.toIso8601String(),
       'category': eventType,
       'location': location,
-      'repeat_id' : repeatPattern?.repeatId,
+      'repeat_id' : repeatId,
       'is_smart_suggested': smartSuggestion == true ? 1 : 0,
     };
   }
@@ -49,6 +51,7 @@ class Event {
       endTime: DateTime.parse(map['end_time']),
       eventType: map['category'],
       location: map['location'],
+      repeatId:map['repeat_id'],
       smartSuggestion: map['is_smart_suggested'] == 1 ? true : false ,
     );
   }
@@ -56,6 +59,6 @@ class Event {
   // Provide a string representation of the Event object
   @override
   String toString() {
-    return 'Event{id: $id, title: $title, description: $description, startTime: $startTime, endTime: $endTime, category: $eventType, location: $location, smartSuggestion: $smartSuggestion, repeatPattern: $repeatPattern, reminders: $reminders}';
+    return 'Event{id: $id, title: $title, description: $description, startTime: $startTime, endTime: $endTime, category: $eventType, location: $location, smartSuggestion: $smartSuggestion, repeatPattern: $repeatPattern, reminders: $reminders , repeatId : $repeatId}';
   }
 }

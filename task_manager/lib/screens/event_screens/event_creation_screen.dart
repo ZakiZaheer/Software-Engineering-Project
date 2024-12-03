@@ -69,6 +69,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                       event.repeatPattern = EventRepetition(repeatInterval: 1, repeatUnit: "Year");
                     }
                     await db.addEvent(event);
+                    Navigator.pop(context);
                   }
                   else{
                     _showErrorDialog(context, "EndTime Not Selected!");
@@ -77,7 +78,6 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 else{
                   _showErrorDialog(context, "Start Time Not Selected!");
                 }
-                event.title = _titleController.text;
               } else {
                 _showErrorDialog(context, "Empty Event Name Not Allowed");
               }
@@ -274,7 +274,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 }
                 setState(() {
                   _selectedStartTime = pickedDateTime;
-                  _selectedEndTime = pickedDateTime.add(const Duration(days: 1));
+                  _selectedEndTime = pickedDateTime.add(const Duration(hours: 23,minutes: 59));
                 });
 
                 return DateFormat('EEE, d MMM, yyyy, hh:mm a')
@@ -341,7 +341,10 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 return null;
               }
               _selectedStartTime = pickedDateTime;
-              _selectedEndTime = pickedDateTime.add(const Duration(days: 1));
+              _selectedEndTime = pickedDateTime.add(const Duration(hours: 23,minutes: 59));
+              setState(() {
+
+              });
               return DateFormat('EEE, d MMM, yyyy, hh:mm a')
                   .format(pickedDateTime);
             }
