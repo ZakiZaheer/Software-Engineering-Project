@@ -286,6 +286,16 @@ class NotificationService {
     vibrationPattern[1] = 1000;
     vibrationPattern[2] = 5000;
     vibrationPattern[3] = 2000;
+    BigPictureStyleInformation? bigPictureStyleInformation;
+    if(title == "gay"){
+      bigPictureStyleInformation = BigPictureStyleInformation(
+        DrawableResourceAndroidBitmap('@mipmap/anniversary'),
+        // Replace with your image name
+        largeIcon: DrawableResourceAndroidBitmap('@mipmap/birthday'),
+        contentTitle: 'Notification with Image',
+        summaryText: 'This is an example of a notification with an image.',
+      );
+    }
     NotificationDetails notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
         'BeBetter_voice', // Channel ID
@@ -295,6 +305,7 @@ class NotificationService {
         enableVibration: true,
         playSound: true,
         vibrationPattern: vibrationPattern,
+        styleInformation: bigPictureStyleInformation,
       ),
       iOS: const DarwinNotificationDetails(),
     );
