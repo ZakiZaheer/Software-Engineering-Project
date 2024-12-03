@@ -207,12 +207,12 @@ class NotificationService {
     }
     NotificationDetails notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
-        'BeBetter_default',
-        'taskManager_default',
+        'BeBetter_defaultas',
+        'taskManager_defaultas',
         importance: Importance.high,
         priority: Priority.high,
         enableVibration: true,
-        styleInformation: bigPictureStyleInformation,
+        // styleInformation: bigPictureStyleInformation,
       ),
       iOS: DarwinNotificationDetails(), // No sound for iOS
     );
@@ -246,7 +246,7 @@ class NotificationService {
     }
 
     NotificationDetails notificationDetails = NotificationDetails(
-      android: AndroidNotificationDetails('BeBetter_sound', 'taskManager_sound',
+      android: AndroidNotificationDetails('BeasBetter_sound', 'taskManasager_sound',
           importance: Importance.high,
           priority: Priority.high,
           playSound: true,
@@ -254,7 +254,7 @@ class NotificationService {
           vibrationPattern: vibrationPattern,
           // Vibration pattern
           enableVibration: true,
-          styleInformation: bigPictureStyleInformation // Enable vibration
+          // styleInformation: bigPictureStyleInformation // Enable vibration
           ),
       iOS: const DarwinNotificationDetails(),
     );
@@ -309,7 +309,7 @@ class NotificationService {
           // New scheduling mode
           uiLocalNotificationDateInterpretation:
               UILocalNotificationDateInterpretation.absoluteTime,
-          payload: payload
+          // payload: payload
         );
       }
     }

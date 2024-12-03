@@ -513,7 +513,7 @@ class SqfLiteService {
         await NotificationService.scheduleEventDefaultReminder(event);
       }
     }
-
+    // await NotificationService.instantNotification("as", "asd", "A");
     if (event.repeatId != null) {
       await insertRepeatedEvent(event);
     }
