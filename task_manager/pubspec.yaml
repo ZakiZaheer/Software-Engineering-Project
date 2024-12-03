@@ -31,3 +31,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+    - assets/anniversary.png
+    - assets/birthday.png
