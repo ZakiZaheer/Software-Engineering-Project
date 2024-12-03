@@ -27,7 +27,7 @@ class SqfLiteService {
   }
 
   Future<Database> _initDB() async {
-    final path = join(await getDatabasesPath(), 'TaskManager12.db');
+    final path = join(await getDatabasesPath(), 'TaskManager13.db');
     return openDatabase(path, version: 1, onCreate: _createDB);
   }
 
@@ -505,6 +505,13 @@ class SqfLiteService {
         reminder.eventId = event.id;
         await db.insert("event_reminder", reminder.toMap());
       }
+      if (event.reminders![0].reminderType == "Voice") {
+        await WorkManagerService.scheduleEventVoiceNotification(event);
+      } else if (event.reminders![0].reminderType == "Alarm") {
+        await NotificationService.scheduleEventAlarmReminder(event);
+      } else {
+        await NotificationService.scheduleEventDefaultReminder(event);
+      }
     }
     if (event.repeatId != null) {
       await insertRepeatedEvent(event);
@@ -523,9 +530,18 @@ class SqfLiteService {
         }
         event.endTime = event.startTime.add(eventDuration);
         event.id = await db.insert('event', event.toMap());
-        for (EventReminder reminder in event.reminders ?? []) {
-          reminder.eventId = event.id;
-          await db.insert("event_reminder", reminder.toMap());
+        if(event.reminders != null){
+          for (EventReminder reminder in event.reminders ?? []) {
+            reminder.eventId = event.id;
+            db.insert("event_reminder", reminder.toMap());
+          }
+          if (event.reminders![0].reminderType == "Voice") {
+            await WorkManagerService.scheduleEventVoiceNotification(event);
+          } else if (event.reminders![0].reminderType == "Alarm") {
+            await NotificationService.scheduleEventAlarmReminder(event);
+          } else {
+            await NotificationService.scheduleEventDefaultReminder(event);
+          }
         }
       }
     } else {
@@ -540,10 +556,20 @@ class SqfLiteService {
         event.startTime = _newEventTime(event.startTime, event.repeatPattern!);
         event.endTime = event.startTime.add(eventDuration);
         event.id = await db.insert('event', event.toMap());
-        for (EventReminder reminder in event.reminders ?? []) {
-          reminder.eventId = event.id;
-          db.insert("event_reminder", reminder.toMap());
+        if(event.reminders != null){
+          for (EventReminder reminder in event.reminders ?? []) {
+            reminder.eventId = event.id;
+            db.insert("event_reminder", reminder.toMap());
+          }
+          if (event.reminders![0].reminderType == "Voice") {
+            await WorkManagerService.scheduleEventVoiceNotification(event);
+          } else if (event.reminders![0].reminderType == "Alarm") {
+            await NotificationService.scheduleEventAlarmReminder(event);
+          } else {
+            await NotificationService.scheduleEventDefaultReminder(event);
+          }
         }
+
         i--;
       }
     }
@@ -553,11 +579,33 @@ class SqfLiteService {
     final db = await database;
     if(event.repeatId!=null){
       await db.delete("event_repetition", where: "id = ?", whereArgs: [event.repeatId]);
+      final List<Map<String,dynamic>> map = await db.query("event" ,where: "repeat_id = ?", whereArgs: [event.repeatId]);
+      List<Event> events = List.generate(map.length, (index) {
+        return Event.fromMap(map[index]);
+      });
+
+      for (Event event in events) {
+        event.reminders = await getEventReminders(event.id!);
+        if (event.reminders != null) {
+          if (event.reminders![0].reminderType == "Voice") {
+            await WorkManagerService.cancelEventVoiceNotification(event);
+          } else {
+            await NotificationService.cancelEventReminders(event);
+          }
+        }
+      }
       await db.delete("event" ,where: "repeat_id = ?", whereArgs: [event.repeatId]);
     }
     else{
-      print("Deleting nonREpeated Event");
+
       await db.delete("event", where: "id = ?", whereArgs: [event.id!]);
+      if (event.reminders != null) {
+        if (event.reminders![0].reminderType == "Voice") {
+          await WorkManagerService.cancelEventVoiceNotification(event);
+        } else {
+          await NotificationService.cancelEventReminders(event);
+        }
+      }
     }
   }
 
@@ -607,7 +655,6 @@ class SqfLiteService {
       if(event.repeatId != null){
         event.repeatPattern = await getEventRepetition(event.repeatId!);
       }
-      print(event);
 
     }
     return events;
@@ -651,6 +698,21 @@ class SqfLiteService {
 
   Future<void> deleteRepeatedEvent(Event event)async{
     final db = await database;
+    final map = await db.query('event' ,where: 'repeat_id = ? AND start_time >= ?' ,   whereArgs: [event.repeatId , event.startTime.toIso8601String()]);
+    List<Event> events = List.generate(map.length, (index) {
+      return Event.fromMap(map[index]);
+    });
+    events.add(event);
+    for (Event event in events) {
+      event.reminders = await getEventReminders(event.id!);
+      if (event.reminders != null) {
+        if (event.reminders![0].reminderType == "Voice") {
+          await WorkManagerService.cancelEventVoiceNotification(event);
+        } else {
+          await NotificationService.cancelEventReminders(event);
+        }
+      }
+    }
     await db.delete('event' ,where: 'repeat_id = ? AND start_time >= ?' ,   whereArgs: [event.repeatId , event.startTime.toIso8601String()]);
     await db.delete('event' , where: 'id = ?',whereArgs: [event.id!]);
   }

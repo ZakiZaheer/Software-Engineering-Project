@@ -185,6 +185,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Widget _buildCalendarGrid() {
+    final firstDayOfMonth = DateTime(_focusedDay.year, _currentMonth, 1);
+    final lastDayOfMonth = DateTime(_focusedDay.year, _currentMonth + 1, 0);
+
+
+    int startPadding =
+        firstDayOfMonth.weekday % 7;
+    DateTime firstDayInGrid =
+    firstDayOfMonth.subtract(Duration(days: startPadding));
+
+
+    List<DateTime> visibleDays = List.generate(35, (index) {
+      return firstDayInGrid.add(Duration(days: index));
+    });
+
     return Expanded(
       flex: 3,
       child: GridView.builder(
@@ -195,18 +209,30 @@ class _CalendarScreenState extends State<CalendarScreen> {
           crossAxisSpacing: 0.0,
           childAspectRatio: 0.6,
         ),
-        itemCount: _daysInMonth(_focusedDay.year, _currentMonth),
+        itemCount: visibleDays.length,
         itemBuilder: (context, index) {
-          final day = index + 1;
-          DateTime currentDate = DateTime(_focusedDay.year, _currentMonth, day);
-          bool isToday = currentDate == DateTime.now();
-          bool isSelected = currentDate == _selectedDay;
+          final currentDate = visibleDays[index];
+
+
+          bool isCurrentMonth = currentDate.month == _currentMonth;
+
+          bool isToday = isCurrentMonth &&
+              currentDate.year == DateTime.now().year &&
+              currentDate.month == DateTime.now().month &&
+              currentDate.day == DateTime.now().day;
+
+          bool isSelected = isCurrentMonth &&
+              currentDate.year == _selectedDay.year &&
+              currentDate.month == _selectedDay.month &&
+              currentDate.day == _selectedDay.day;
 
           return GestureDetector(
             onTap: () {
-              setState(() {
-                _selectedDay = currentDate;
-              });
+              if (isCurrentMonth) {
+                setState(() {
+                  _selectedDay = currentDate;
+                });
+              }
             },
             child: Container(
               decoration: BoxDecoration(
@@ -216,37 +242,44 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 borderRadius: BorderRadius.circular(8),
                 border: isToday
                     ? Border.all(color: Colors.green, width: 2)
-                    : Border.all(color: Colors.grey.withOpacity(0.2)),
+                    : Border.all(
+                  color: isCurrentMonth
+                      ? Colors.grey.withOpacity(0.2)
+                      : Colors.transparent,
+                ),
               ),
               padding: const EdgeInsets.all(4.0),
-              child: Column(
+              child: isCurrentMonth
+                  ? Column(
                 children: [
                   Text(
-                    "$day",
+                    "${currentDate.day}",
                     style: TextStyle(
                       color: isSelected ? Colors.black : Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  if (_events[currentDate] != null) //change
+                  if (_events[currentDate] != null)
                     Flexible(
                       child: ListView(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        children: _events[currentDate]!.take(3).map((event) {
+                        children:
+                        _events[currentDate]!.take(3).map((event) {
                           return Container(
                             margin: const EdgeInsets.only(top: 2.0),
-                            padding: const EdgeInsets.symmetric(vertical: 2.0),
+                            padding:
+                            const EdgeInsets.symmetric(vertical: 2.0),
                             decoration: BoxDecoration(
-                              color: _getEventColor(event.eventType).withOpacity(0.2), //change
+                              color: _getEventColor(event.eventType).withOpacity(0.2),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              event.title, //change
+                              event.title,
                               style: TextStyle(
                                 fontSize: 10,
-                                color: _getEventColor(event.eventType), //change
+                                color: _getEventColor(event.eventType),
                                 overflow: TextOverflow.ellipsis,
                               ),
                               textAlign: TextAlign.center,
@@ -256,7 +289,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ),
                     ),
                 ],
-              ),
+              )
+                  : const SizedBox.shrink(), // Empty cell for non-month days
             ),
           );
         },

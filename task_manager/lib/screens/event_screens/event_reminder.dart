@@ -30,7 +30,7 @@ class _EventRemindersScreenState extends State<EventRemindersScreen> {
       for(EventReminder reminder in widget.reminders!) {
         final option = "${reminder.reminderInterval} ${reminder.reminderUnit}";
         if (option == "0 Minute") {
-          selectedOptions.add("At Time Of Task");
+          selectedOptions.add("At Time Of Event");
         }
         else {
           if (!options.contains(option)) {
@@ -40,6 +40,7 @@ class _EventRemindersScreenState extends State<EventRemindersScreen> {
         }
       }
     }
+    print("Current selected options: $selectedOptions");
     super.initState();
   }
 
@@ -67,6 +68,7 @@ class _EventRemindersScreenState extends State<EventRemindersScreen> {
         actions: [
           TextButton(
             onPressed: () {
+              print("Current selected options: $selectedOptions");
               List<EventReminder> reminderList = [];
               if(selectedOptions.contains("At Time Of Event")){
                 selectedOptions.remove("At Time Of Event");
