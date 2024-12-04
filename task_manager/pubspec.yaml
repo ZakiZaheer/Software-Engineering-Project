@@ -20,6 +20,7 @@ dependencies:
   regexed_validator: ^2.0.0
   path_provider:
   share_plus:
+  file_picker:
 
 dev_dependencies:
   flutter_test:

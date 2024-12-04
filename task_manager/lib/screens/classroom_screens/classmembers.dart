@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../customWidgets/footer.dart';
+
 
 class ClassroomMembersPage extends StatefulWidget {
   final bool isCr; // Accepts `is_cr` variable from the navigator
@@ -229,6 +231,8 @@ class _ClassroomMembersPageState extends State<ClassroomMembersPage> {
           ),
         ),
       ),
+      bottomNavigationBar: const MainFooter(index: 2),
+
     );
   }
 }

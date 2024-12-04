@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../customWidgets/footer.dart';
+
 class JoinRequestsPage extends StatefulWidget {
   const JoinRequestsPage({Key? key}) : super(key: key);
 
@@ -220,6 +222,8 @@ class _JoinRequestsPageState extends State<JoinRequestsPage> {
           ),
         ),
       ),
+      bottomNavigationBar: const MainFooter(index: 2),
+
     );
   }
 }

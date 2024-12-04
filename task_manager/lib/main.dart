@@ -4,6 +4,7 @@ import 'package:task_manager/model/task/taskReminder_modal.dart';
 import 'package:task_manager/model/task/taskRepetition_modal.dart';
 import 'package:task_manager/notification_service/notification_service.dart';
 import 'package:task_manager/notification_service/work_manger_service.dart';
+import 'package:task_manager/screens/classroom_screens/classes.dart';
 import 'package:task_manager/screens/event_screens/event_creation_screen.dart';
 import 'package:task_manager/screens/event_screens/event_modification_screen.dart';
 import 'package:task_manager/screens/event_screens/event_reminder.dart';
@@ -85,6 +86,7 @@ class MyApp extends StatelessWidget {
         '/eventSetRemindersScreen' : (context) => EventSetRemindersScreen(event: ModalRoute.of(context)!.settings.arguments as Event,),
         '/eventModificationScreen' : (context) => EventModificationScreen(event: ModalRoute.of(context)!.settings.arguments as Event),
         '/classroomSplashScreen' : (context) => const SplashScreen(),
+        '/classroom' :(context) => ClassroomPage() ,
         '/signUpScreen' : (context) => SignUpPage(),
         '/settingsScreen' : (context) => const SettingScreen(),
       },

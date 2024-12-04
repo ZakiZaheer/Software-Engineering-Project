@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:last_attempt/classroom/classmembers.dart';
-import 'package:last_attempt/classroom/joinreqs.dart';
-import 'package:last_attempt/classroom/create_post.dart';
-import 'package:last_attempt/classroom/viewposts.dart';
+import '../../customWidgets/footer.dart';
+import 'classmembers.dart';
+import 'joinreqs.dart';
+import 'create_post.dart';
+import 'viewposts.dart';
 
 
 
@@ -598,6 +599,8 @@ class _SoftwareEngineeringPageState extends State<SoftwareEngineeringPage> {
           ],
         ),
       ),
+      bottomNavigationBar: const MainFooter(index: 2),
+
     );
   }
 }

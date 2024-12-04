@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../customWidgets/footer.dart';
+
 class CreateClassPage extends StatefulWidget {
   @override
   _CreateClassPageState createState() => _CreateClassPageState();
@@ -81,6 +83,8 @@ class _CreateClassPageState extends State<CreateClassPage> {
           ),
         ),
       ),
+      bottomNavigationBar: const MainFooter(index: 2),
+
     );
   }
 

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:last_attempt/Widgets/date_picker.dart';
-import 'package:last_attempt/Widgets/time_picker.dart';
+import '../../customWidgets/date_picker.dart';
+import '../../customWidgets/footer.dart';
+import '../../customWidgets/time_picker.dart';
 import 'package:file_picker/file_picker.dart';
 
 void main() {
@@ -346,7 +347,9 @@ class _postState extends State<createPost> {
                 )
             ),
           ),
-        )
+        ),
+        bottomNavigationBar: const MainFooter(index: 2),
+
     );
   }
 

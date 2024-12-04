@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:last_attempt/classroom/create_class.dart';
-import 'package:last_attempt/classroom/perticularclass.dart';
+import 'package:task_manager/customWidgets/footer.dart';
+import 'create_class.dart';
+import 'perticularclass.dart';
 
 void main() {
   runApp(MyApp());
@@ -77,13 +78,14 @@ class ClassroomPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor:Color(0xFF091F40) ,
         leading: IconButton(
           icon: Icon(Icons.people_alt_rounded), // or use Image for a custom icon
           onPressed: () {
             // Handle menu icon action
           },
         ),
-        title: Text('Classroom'),
+        title: Text('Classroom',style: TextStyle(color: Colors.white),),
         actions: [
           IconButton(
             icon: Icon(Icons.notifications),
@@ -145,6 +147,7 @@ class ClassroomPage extends StatelessWidget {
           ),
         ),
       ),
+      bottomNavigationBar: const MainFooter(index: 2),
     );
   }
 }
