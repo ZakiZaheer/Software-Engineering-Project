@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:intl/intl.dart';
+import 'package:task_manager/model/event/event_modal.dart';
 import 'package:workmanager/workmanager.dart';
+import '../model/event/event_reminder_modal.dart';
 import '../model/task/task_modal.dart';
 import 'notification_service.dart';
 
@@ -14,7 +16,8 @@ void workManagerCallbackDispatcher() async {
 
     String textToSpeak = inputData!['title'] ?? "Hello Human!";
     String? notificationDescription = inputData['body'];
-    await NotificationService.instantNotification(textToSpeak, notificationDescription!);
+    String type = inputData['type'];
+    await NotificationService.instantNotification(textToSpeak, notificationDescription!,type);
     FlutterTts tts = FlutterTts();
     await tts.setVolume(1.0);
     Completer<void> ttsCompleter = Completer<void>();
@@ -97,10 +100,80 @@ class WorkManagerService {
           initialDelay: initialDelay, // Calculated delay
           inputData: {
             'title': task.title,
-            'body' : task.description ?? ""// Text to speak
+            'body' : task.description ?? "",// Text to speak
+            'type' : 'task',
           },
         );
       }
     }
   }
+
+  static Future<void> cancelEventVoiceNotification(Event event)async{
+    for (int i = 0; i < event.reminders!.length; i++) {
+      await Workmanager().cancelByUniqueName("${(event.id! * 100 + i)}");
+    }
+
+  }
+
+
+  static Future<void> scheduleEventVoiceNotification(Event event) async {
+    print("Scheduling Event Voice Reminders");
+    final DateTime eventDateTime = event.startTime;
+    DateTime reminderTime;
+
+    for (int i = 0; i < (event.reminders?.length ?? 0); i++) {
+      final EventReminder reminder = event.reminders![i];
+
+      // Calculate reminder time based on reminder unit and interval
+      if (reminder.reminderUnit == 'Minute') {
+        int minutes = reminder.reminderInterval;
+        reminderTime = eventDateTime.subtract(Duration(minutes: minutes));
+      } else if (reminder.reminderUnit == "Hour") {
+        int hours = reminder.reminderInterval;
+        reminderTime = eventDateTime.subtract(Duration(hours: hours));
+      } else if (reminder.reminderUnit == "Day") {
+        int days = reminder.reminderInterval;
+        reminderTime = eventDateTime.subtract(Duration(days: days));
+      } else if (reminder.reminderUnit == "Week") {
+        int days = reminder.reminderInterval * 7;
+        reminderTime = eventDateTime.subtract(Duration(days: days));
+      } else if (reminder.reminderUnit == "Month") {
+        int months = reminder.reminderInterval;
+        reminderTime = DateTime(
+          eventDateTime.year,
+          eventDateTime.month - months,
+          eventDateTime.day,
+          eventDateTime.hour,
+          eventDateTime.minute,
+        );
+      } else {
+        int years = reminder.reminderInterval;
+        reminderTime = DateTime(
+          eventDateTime.year - years,
+          eventDateTime.month,
+          eventDateTime.day,
+          eventDateTime.hour,
+          eventDateTime.minute,
+        );
+      }
+      // Calculate initial delay as the difference from the current time
+      if (reminderTime.isAfter(DateTime.now())) {
+        Duration initialDelay = reminderTime.difference(DateTime.now());
+        print("Reminder Scheduled For $reminderTime");
+
+        await Workmanager().registerOneOffTask(
+          '${event.id! * 100 + i}', // Unique task ID
+          ttsTaskName, // Task name matches in callback dispatcher
+          initialDelay: initialDelay, // Calculated delay
+          inputData: {
+            'title': event.title,
+            'body' : event.description ?? "", // Text to speak
+            'type' : event.eventType,
+          },
+        );
+      }
+    }
+  }
+
+
 }

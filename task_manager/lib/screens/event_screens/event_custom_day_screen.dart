@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
-import 'event_custom_week_screen.dart';
-import 'event_custom_month_screen.dart';
-import 'event_custom_year_screen.dart';
+import 'package:task_manager/model/event/event_repetition_modal.dart';
 import '../../customWidgets/event_counter.dart';
 
 class CustomFrequencyPage extends StatefulWidget {
+  final String selectedOption;
+  CustomFrequencyPage({super.key, required this.selectedOption});
   @override
   _CustomFrequencyPageState createState() => _CustomFrequencyPageState();
 }
 
 class _CustomFrequencyPageState extends State<CustomFrequencyPage> {
-  String selectedFrequency = "Day";
-  int frequencydays = 2;
+  String selectedUnit = "Day";
+  int selectedInterval = 2;
+  List<bool> selectedMonths = List.generate(12, (_) => false);
+  List<bool> selectedDates = List.generate(31, (_) => false);
+  List<bool> selectedDays = List.generate(7, (_) => false);
   OverlayEntry? _overlayEntry;
   final LayerLink _layerLink = LayerLink();
 
@@ -32,13 +35,13 @@ class _CustomFrequencyPageState extends State<CustomFrequencyPage> {
         child: CompositedTransformFollower(
           link: _layerLink,
           showWhenUnlinked: false,
-          offset: Offset(-65, 0),
+          offset: const Offset(-65, 0),
           child: Material(
             color: Colors.transparent,
             child: Container(
               width: 120,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   colors: [Colors.blueAccent, Colors.tealAccent],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -51,32 +54,30 @@ class _CustomFrequencyPageState extends State<CustomFrequencyPage> {
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        selectedFrequency = option;
+                        selectedUnit = option;
                       });
                       _toggleDropdown();
 
                       switch (option) {
                         case "Week":
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => Week_Screen()),
-                          );
+                          setState(() {
+                            selectedUnit = "Week";
+                          });
                           break;
                         case "Month":
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => Month_Screen()),
-                          );
+                          setState(() {
+                            selectedUnit = "Month";
+                          });
                           break;
                         case "Year":
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => YearScreen()),
-                          );
+                          setState(() {
+                            selectedUnit = "Year";
+                          });
                           break;
+                        default:
+                          setState(() {
+                            selectedUnit = "Day";
+                          });
                       }
                     },
                     child: Container(
@@ -87,13 +88,13 @@ class _CustomFrequencyPageState extends State<CustomFrequencyPage> {
                         children: [
                           Text(
                             option,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.black,
                               fontSize: 16,
                             ),
                           ),
-                          if (option == selectedFrequency)
-                            Icon(
+                          if (option == selectedUnit)
+                            const Icon(
                               Icons.check,
                               color: Colors.black,
                               size: 18,
@@ -112,19 +113,70 @@ class _CustomFrequencyPageState extends State<CustomFrequencyPage> {
   }
 
   @override
+  void initState() {
+    if(widget.selectedOption != "Never"){
+      final optionSplit = widget.selectedOption.trim().split(" ");
+      selectedUnit = optionSplit[1];
+      selectedInterval = int.parse(optionSplit[0]);
+      if(optionSplit.length > 2){
+        List<String> repeatOn = optionSplit[3].replaceAll(")", "").split("/");
+        if(selectedUnit == "Week"){
+          List<String> days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" , "Sunday"];
+          for(int i =0 ; i < repeatOn.length ; i++){
+            int index = days.indexOf(repeatOn[i]);
+            selectedDays[index] = true;
+          }
+        }
+        else if(selectedUnit == "Month"){
+          List<String> dates = [
+            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+            "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
+            "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"
+          ];
+          for(int i =0 ; i < repeatOn.length ; i++){
+            int index = dates.indexOf(repeatOn[i]);
+            selectedDates[index] = true;
+          }
+        }
+        else{
+          List<String> months = [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December"
+          ];
+          for(int i =0 ; i < repeatOn.length ; i++){
+            int index = months.indexOf(repeatOn[i]);
+            selectedMonths[index] = true;
+          }
+        }
+      }
+    }
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF0A1A2A),
+      backgroundColor: const Color(0xFF0A1A2A),
       appBar: AppBar(
-        backgroundColor: Color(0xFF0A1329),
+        backgroundColor: const Color(0xFF0A1329),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.close, color: Colors.white),
+          icon: const Icon(Icons.close, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: Text(
+        title: const Text(
           "Custom",
           style: TextStyle(
             fontSize: 24,
@@ -135,9 +187,58 @@ class _CustomFrequencyPageState extends State<CustomFrequencyPage> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context, frequencydays);
+              EventRepetition repeatPattern = EventRepetition(repeatInterval: selectedInterval, repeatUnit: selectedUnit);
+              List<String> repeatOn = [];
+              if(repeatPattern.repeatUnit == "Week"){
+                List<String> days = [ "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" , "Sunday"];
+                for(int i =0 ; i < 7 ; i++){
+                  if(selectedDays[i]){
+                    repeatOn.add(days[i]);
+                  }
+                }
+              }
+              else if(repeatPattern.repeatUnit == "Month"){
+                List<String> dates = [
+                  "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+                  "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
+                  "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"
+                ];
+                for(int i =0 ; i < 31 ; i++){
+                  if(selectedDates[i]){
+                    repeatOn.add(dates[i]);
+                  }
+                }
+              }
+              else if(repeatPattern.repeatUnit == "Year"){
+                List<String> months = [
+                  "January",
+                  "February",
+                  "March",
+                  "April",
+                  "May",
+                  "June",
+                  "July",
+                  "August",
+                  "September",
+                  "October",
+                  "November",
+                  "December"
+                ];
+
+                for(int i =0 ; i < 12 ; i++){
+                  if(selectedMonths[i]){
+                    repeatOn.add(months[i]);
+                  }
+                }
+              }
+              else{
+                repeatOn = [];
+              }
+              repeatPattern.repeatOn = repeatOn.isNotEmpty ? repeatOn.join("/") : null;
+              print(repeatPattern);
+              Navigator.pop(context, repeatPattern);
             },
-            child: Text(
+            child: const Text(
               "Save",
               style: TextStyle(color: Colors.white, fontSize: 16),
             ),
@@ -159,7 +260,7 @@ class _CustomFrequencyPageState extends State<CustomFrequencyPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   "Frequency",
                   style: TextStyle(
                     fontSize: 16,
@@ -173,7 +274,7 @@ class _CustomFrequencyPageState extends State<CustomFrequencyPage> {
                     child: Row(
                       children: [
                         Text(
-                          selectedFrequency,
+                          selectedUnit,
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.grey[400],
@@ -190,13 +291,13 @@ class _CustomFrequencyPageState extends State<CustomFrequencyPage> {
                 ),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             GestureDetector(
               onTap: () async {
                 final selectedCount = await showModalBottomSheet<int>(
                   context: context,
                   isScrollControlled: true,
-                  shape: RoundedRectangleBorder(
+                  shape: const RoundedRectangleBorder(
                     borderRadius:
                         BorderRadius.vertical(top: Radius.circular(20)),
                   ),
@@ -213,14 +314,14 @@ class _CustomFrequencyPageState extends State<CustomFrequencyPage> {
 
                 if (selectedCount != null) {
                   setState(() {
-                    frequencydays = selectedCount;
+                    selectedInterval = selectedCount;
                   });
                 }
               },
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     "Every",
                     style: TextStyle(
                       fontSize: 16,
@@ -230,7 +331,7 @@ class _CustomFrequencyPageState extends State<CustomFrequencyPage> {
                   Row(
                     children: [
                       Text(
-                        "$frequencydays",
+                        "$selectedInterval",
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.grey[400],
@@ -246,19 +347,174 @@ class _CustomFrequencyPageState extends State<CustomFrequencyPage> {
                 ],
               ),
             ),
-            SizedBox(height: 15),
+            const SizedBox(height: 15),
+            if (selectedUnit != "Day")
+              const Padding(
+                padding: EdgeInsets.only(bottom: 8.0),
+                child: Text(
+                  'Choose Reminder Time',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Text(
-                'Event will repeat every $frequencydays days',
-                style: TextStyle(color: Colors.grey, fontSize: 14),
+                'Event will repeat every $selectedInterval days',
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
               ),
             ),
+            const SizedBox(height: 8),
+            _buildSelectionFields(),
           ],
         ),
       ),
     );
   }
+
+  _buildSelectionFields(){
+    if(selectedUnit == "Week"){
+      return _buildDaySelector();
+    }
+    else if(selectedUnit == "Month"){
+      return _buildDateSelector();
+    }
+    else if(selectedUnit == "Year"){
+      return _buildMonthSelector();
+    }
+    return const SizedBox();
+  }
+
+  Widget _buildDaySelector() {
+    List<String> days = ['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat' , 'Sun'];
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: 2.5,
+      ),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: days.length,
+      itemBuilder: (context, index) {
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              selectedDays[index] = !selectedDays[index];
+            });
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color:
+              selectedDays[index] ? const Color(0xFFFFA500) : const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              days[index],
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDateSelector() {
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 7,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: 1.2,
+      ),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: 31,
+      itemBuilder: (context, index) {
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              selectedDates[index] = !selectedDates[index];
+            });
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color:
+              selectedDates[index] ? Color(0xFFFFA500) : Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              '${index + 1}',
+              style:const  TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
+  Widget _buildMonthSelector() {
+    List<String> months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ];
+
+    return GridView.builder(
+      gridDelegate: const  SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: 2,
+      ),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: 12,
+      itemBuilder: (context, index) {
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              selectedMonths[index] = !selectedMonths[index];
+            });
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color:
+              selectedMonths[index] ?const Color(0xFFFFA500) : const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              months[index],
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
 
   @override
   void dispose() {

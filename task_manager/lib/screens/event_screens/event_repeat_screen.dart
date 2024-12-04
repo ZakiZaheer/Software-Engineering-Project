@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:task_manager/model/event/event_repetition_modal.dart';
+import '../../Custom_Fonts.dart';
+import '../../customWidgets/GraadientCheckBox.dart';
+import '../../customWidgets/footer.dart';
 import 'event_custom_day_screen.dart';
 
 class EventRepeatScreen extends StatefulWidget {
-  final  EventRepetition? repeatPattern;
+  final EventRepetition? repeatPattern;
 
-  EventRepeatScreen({required this.repeatPattern});
+  const EventRepeatScreen({super.key, required this.repeatPattern});
 
   @override
   _EventRepeatScreenState createState() => _EventRepeatScreenState();
@@ -13,26 +16,24 @@ class EventRepeatScreen extends StatefulWidget {
 
 class _EventRepeatScreenState extends State<EventRepeatScreen> {
   List<String> options = [
-    "Never",
-    "Daily",
-    "Weekly (every Sunday)",
-    "Monthly (second Sunday)",
-    "Monthly (same date)",
-    "Yearly",
-    "Custom",
+    "1 Hour",
+    "1 Day",
+    "1 Week",
+    "1 Month",
+    "1 Year",
   ];
-
   String? selectedOption;
+
 
   @override
   void initState() {
     if (widget.repeatPattern != null) {
-      final eventOption =
-          "${widget.repeatPattern!.repeatInterval} ${widget.repeatPattern!.repeatUnit}";
-      if (!options.contains(eventOption)) {
-        options.add(eventOption);
+      final option =
+          "${widget.repeatPattern!.repeatInterval} ${widget.repeatPattern!.repeatUnit} ${widget.repeatPattern!.repeatOn != null ? "On ${widget.repeatPattern!.repeatOn}" : "" }";
+      if (!options.contains(option)) {
+        options.add(option);
       }
-      selectedOption = eventOption;
+      selectedOption = option;
     } else {
       selectedOption = "Never";
     }
@@ -40,14 +41,16 @@ class _EventRepeatScreenState extends State<EventRepeatScreen> {
     super.initState();
   }
 
+  // Initial selected option
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF0A1A2A),
+      backgroundColor: const Color(0xFF0A1A2A),
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Repeat',
-          style: TextStyle(color: Colors.white),
+          style: appBarHeadingStyle(),
         ),
         backgroundColor: const Color(0xFF0A1329),
         elevation: 0,
@@ -59,17 +62,29 @@ class _EventRepeatScreenState extends State<EventRepeatScreen> {
         ),
         actions: [
           TextButton(
+            //Modify
             onPressed: () {
-              Navigator.of(context).pop();
+              if(selectedOption == "Never"){
+                Navigator.pop(context , "Never");
+              }
+              else{
+                final optionSplit = selectedOption!.trim().split(" ");
+                print(optionSplit);
+                String? repeatOn;
+                if(optionSplit.length > 2){
+                  repeatOn = optionSplit[3].replaceFirst(")", "");
+                }
+                Navigator.pop(context , EventRepetition(repeatInterval: int.parse(optionSplit[0]), repeatUnit: optionSplit[1] , repeatOn: repeatOn));
+              }
             },
-            child: const Text(
+            child: Text(
               "Save",
-              style: TextStyle(color: Colors.white),
+              style: appBarHeadingButton(),
             ),
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(2),
+          preferredSize: const Size.fromHeight(2),
           child: Container(
             color: Colors.white.withOpacity(0.6),
             height: 2,
@@ -78,122 +93,57 @@ class _EventRepeatScreenState extends State<EventRepeatScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
           children: [
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
+            GradientCheckBox(
+              text: "Never",
+              isSelected: selectedOption == "Never",
+              onSelect: () {
+                setState(() {
+                  selectedOption = "Never";
+                });
+              },
+            ),
             ...options.map((option) {
               bool isSelected = selectedOption == option;
-              return GradientBorderBox(
-                text: option,
+              return GradientCheckBox(
+                text: "Every $option",
                 isSelected: isSelected,
-                onSelect: () async {
-                  if (option == "Custom") {
-                    // Navigate to CustomFrequencyPage and wait for a returned value
-                    final customFrequency = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CustomFrequencyPage(),
-                      ),
-                    );
-
-                    if (customFrequency != null) {
-                      setState(() {
-                        selectedOption = "Custom: Every $customFrequency days";
-                      });
-                    }
-                  } else {
-                    setState(() {
-                      selectedOption = option;
-                    });
-                  }
+                onSelect: () {
+                  setState(() {
+                    selectedOption = option;
+                  });
                 },
               );
-            }).toList(),
+            }),
+            GradientCheckBox(
+              text: 'Custom',
+              isSelected: false,
+              onSelect: ()async {
+                final customFrequency = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CustomFrequencyPage(selectedOption: selectedOption!,),
+                  ),
+                );
+
+                if (customFrequency != null) {
+                  setState(() {
+                    final option = customFrequency as EventRepetition;
+                    final newOption = "${option.repeatInterval} ${option.repeatUnit} ${option.repeatOn != null ? "(On ${option.repeatOn})" : ""}";
+                    if(!options.contains(newOption)){
+                      options.add(newOption);
+                    }
+                    selectedOption = newOption;
+                  });
+                }
+              },
+            ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class GradientBorderBox extends StatelessWidget {
-  final String text;
-  final bool isSelected;
-  final VoidCallback onSelect;
-
-  GradientBorderBox({
-    required this.text,
-    required this.isSelected,
-    required this.onSelect,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onSelect,
-      child: Container(
-        margin: EdgeInsets.symmetric(vertical: 8),
-        padding: isSelected ? EdgeInsets.all(2) : EdgeInsets.all(1),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          gradient: LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: isSelected
-                ? [
-                    Color(0xFFE8E8D5),
-                    Color(0xFFB0E0E6),
-                    Color(0xFF051A33),
-                  ]
-                : [
-                    Color(0xFFE2E2E2),
-                    Color(0xFF051A33),
-                  ],
-          ),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient: isSelected
-                ? LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      Colors.white.withOpacity(0.5),
-                      Colors.transparent,
-                    ],
-                  )
-                : null,
-            color: isSelected ? null : Color(0xFF0A1A2A),
-          ),
-          child: Row(
-            children: [
-              if (isSelected)
-                Padding(
-                  padding: const EdgeInsets.only(left: 1),
-                  child: Icon(
-                    Icons.check,
-                    color: Colors.black,
-                    size: 20,
-                  ),
-                ),
-              Expanded(
-                child: ListTile(
-                  contentPadding: EdgeInsets.symmetric(horizontal: 24),
-                  title: Text(
-                    text,
-                    style: TextStyle(
-                      color: isSelected ? Colors.black : Colors.white,
-                      fontSize: 18,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      bottomNavigationBar: const MainFooter(index: 1),
     );
   }
 }

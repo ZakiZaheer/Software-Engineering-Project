@@ -3,9 +3,6 @@ import 'package:flutter/material.dart';
 import '../../customWidgets/footer.dart';
 
 
-void main(){
-  runApp(ResetPass());
-}
 
 class ResetPass extends StatelessWidget{
   @override

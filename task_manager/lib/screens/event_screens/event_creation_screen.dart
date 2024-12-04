@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:task_manager/customWidgets/CustomDivider.dart';
 import 'package:task_manager/customWidgets/SelectionField.dart';
 import 'package:task_manager/customWidgets/inputField.dart';
+import 'package:task_manager/database_service/sqfliteService.dart';
 import 'package:task_manager/model/event/event_modal.dart';
 import '../../customWidgets/ErrorDialog.dart';
 import '../../customWidgets/alert_slider.dart';
 import '../../customWidgets/date_picker.dart';
 import '../../customWidgets/date_time_picker.dart';
 import 'package:intl/intl.dart';
-
 import '../../customWidgets/footer.dart';
 import '../../model/event/event_reminder_modal.dart';
+import '../../model/event/event_repetition_modal.dart';
 
 class EventCreationScreen extends StatefulWidget {
   const EventCreationScreen({super.key});
-
   @override
   State<EventCreationScreen> createState() => _EventCreationScreenState();
 }
@@ -30,7 +30,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   String _selectedReminderType = "Default";
-
+  final db = SqfLiteService();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,30 +40,46 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
-          onPressed: () {
+          onPressed: ()async {
             Navigator.pop(context);
           },
         ),
         title: Text(_titleText(), style: const TextStyle(color: Colors.white)),
         actions: [
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               if (_titleController.text.isNotEmpty) {
-                event.title = _titleController.text;
-                if (_descriptionController.text.isNotEmpty) {
-                  event.description = _descriptionController.text;
+                if(_selectedStartTime != null){
+                  if(_selectedEndTime != null){
+                    event.title = _titleController.text;
+                    event.startTime = _selectedStartTime!;
+                    event.endTime = _selectedEndTime!;
+                    if (_descriptionController.text.isNotEmpty) {
+                      event.description = _descriptionController.text;
+                    }
+                    if (_locationController.text.isNotEmpty) {
+                      event.location = _locationController.text;
+                    }
+                    if(event.reminders != null){
+                      for(EventReminder reminder in event.reminders!){
+                        reminder.reminderType = _selectedReminderType;
+                      }
+                    }
+                    if(event.eventType != "General"){
+                      event.repeatPattern = EventRepetition(repeatInterval: 1, repeatUnit: "Year");
+                    }
+                    await db.addEvent(event);
+                    Navigator.pop(context);
+                  }
+                  else{
+                    _showErrorDialog(context, "EndTime Not Selected!");
+                  }
                 }
-                if (_locationController.text.isNotEmpty) {
-                  event.location = _locationController.text;
+                else{
+                  _showErrorDialog(context, "Start Time Not Selected!");
                 }
-                print("Event: $event");
               } else {
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return const ErrorDialog(
-                          title: "Empty Event Name Not Allowed!");
-                    });
+                _showErrorDialog(context, "Empty Event Name Not Allowed");
               }
             },
             child: const Text("Create", style: TextStyle(color: Colors.white)),
@@ -129,7 +145,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: MainFooter(index: 1),
+      bottomNavigationBar:const  MainFooter(index: 1),
     );
   }
 
@@ -153,6 +169,14 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               (value) {
             setState(() {
               isAllDay = !isAllDay;
+              if(_selectedStartTime != null){
+                _selectedStartTime = DateTime(
+                  _selectedStartTime!.year,
+                  _selectedStartTime!.month,
+                  _selectedStartTime!.day,
+                );
+                _selectedEndTime = _selectedStartTime!.add(Duration(days: 1));
+              }
             });
           },
         ),
@@ -165,6 +189,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               DateTime? pickedDate = await showCustomDateTimePicker(
                 context: context,
                 title: 'From',
+                initialDateTime: _selectedStartTime,
               );
               if (pickedDate != null) {
                 if (_selectedEndTime != null && _selectedEndTime!.isBefore(pickedDate)) {
@@ -195,6 +220,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               DateTime? pickedDate = await showCustomDateTimePicker(
                 context: context,
                 title: 'To',
+                initialDateTime: _selectedEndTime,
               );
               if (pickedDate != null) {
                 if (_selectedStartTime != null &&
@@ -222,7 +248,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           SelectionField(
             key: UniqueKey(),  // Added UniqueKey to force widget recreation
             title: "Date",
-            initialValue: _selectedStartTime != null ? DateFormat('d MMM').format(_selectedStartTime!) : "none",
+            initialValue: _selectedStartTime != null ? DateFormat('EEE, d MMM, yyyy, hh:mm a').format(_selectedStartTime!) : "none",
             onTap: () async {
               String? pickedDate = await showModalBottomSheet<String>(
                 context: context,
@@ -248,10 +274,11 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 }
                 setState(() {
                   _selectedStartTime = pickedDateTime;
-                  _selectedEndTime = pickedDateTime;
+                  _selectedEndTime = pickedDateTime.add(const Duration(hours: 23,minutes: 59));
                 });
 
-                return DateFormat('d MMM').format(pickedDateTime);
+                return DateFormat('EEE, d MMM, yyyy, hh:mm a')
+                    .format(pickedDateTime);
               }
               return null;
             },
@@ -259,21 +286,22 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           ),
         SelectionField(
           title: "Repeat",
-          initialValue: "none",
-          onTap: () {
-            Navigator.pushNamed(context, '/eventRepeatScreen' , arguments: event.repeatPattern);
-          },
+          key: UniqueKey(),
+          initialValue: event.repeatPattern != null ? "Every ${event.repeatPattern!.repeatInterval} ${event.repeatPattern!.repeatUnit}${event.repeatPattern!.repeatOn != null ? " On ${event.repeatPattern!.repeatOn}" : "" }" : "none",
+          onTap: _setEventRepetition,
           isActive: _selectedEndTime != null && _selectedStartTime != null,
         ),
         SelectionField(
           title: "Stop Repeating After",
-          initialValue: "none",
+          key: UniqueKey(),
+          initialValue: event.repeatPattern != null ?  _checkRepeatType(event.repeatPattern!) : "Never",
           onTap: _setRepeatUntil,
           isActive: event.repeatPattern != null,
         ),
         SelectionField(
           title: "Reminder",
-          initialValue: "none",
+          key: UniqueKey(),
+          initialValue: event.reminders != null ?"Active" : "Disabled",
           onTap: _setEventReminders,
           isActive: _selectedEndTime != null && _selectedStartTime != null,
         ),
@@ -313,8 +341,12 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
                 return null;
               }
               _selectedStartTime = pickedDateTime;
-              _selectedEndTime = pickedDateTime;
-              return DateFormat('d MMM').format(pickedDateTime);
+              _selectedEndTime = pickedDateTime.add(const Duration(hours: 23,minutes: 59));
+              setState(() {
+
+              });
+              return DateFormat('EEE, d MMM, yyyy, hh:mm a')
+                  .format(pickedDateTime);
             }
             return null;
           },
@@ -322,7 +354,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         ),
         SelectionField(
           title: "Reminder",
-          initialValue: "none",
+          key: UniqueKey(),
+          initialValue: event.reminders != null ? "Active" : "Disabled",
             onTap: _setEventReminders,
           isActive: _selectedEndTime != null && _selectedStartTime != null,
         ),
@@ -330,10 +363,10 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         const CustomDivider(),
         _buildSwitchTile(
           "Smart Suggestion",
-          isSmartSuggested,
+          event.smartSuggestion,
               (value) {
             setState(() {
-              isSmartSuggested = !isSmartSuggested;
+              event.smartSuggestion = !event.smartSuggestion;
             });
           },
         ),
@@ -431,12 +464,38 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     }
   }
 
+  _setEventRepetition() async {
+    final repeatPattern = await Navigator.pushNamed(
+      context,
+      '/eventRepeatScreen',
+      arguments: event.repeatPattern,
+    );
+
+    if (repeatPattern != null) {
+      if (repeatPattern == "Never") {
+        setState(() {
+          event.repeatPattern = null;
+        });
+      } else {
+        final newRepeatPattern =
+        repeatPattern as EventRepetition;
+        setState(() {
+          event.repeatPattern = newRepeatPattern;
+        });
+      }
+    }
+    // Returns the formatted repeat pattern string
+    return event.repeatPattern != null
+        ? "Every ${event.repeatPattern!.repeatInterval} ${event.repeatPattern!.repeatUnit}${event.repeatPattern!.repeatOn != null ? " On ${event.repeatPattern!.repeatOn}" : "" }"
+        : "Never";
+  }
+
 
   _setRepeatUntil() async {
     final data = await Navigator.pushNamed(context, '/eventRepeatUntilScreen', arguments: event.repeatPattern) as List?;
     if (data != null) {
+      print(data);
       if (data[1] == "Never") {
-
         setState(() {
           event.repeatPattern!.repeatType =
           "Never";
@@ -448,7 +507,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           event.repeatPattern!.repeatType = "Time";
           event.repeatPattern!.repeatUntil = data[0];
         });
-        return DateFormat('d MMM').format(data[0]);
+        return DateFormat('d MMM yyyy').format(DateTime.parse(data[0]));
       } else {
 
         setState(() {
@@ -464,11 +523,26 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
 }
 
-
-
-
-
-
 String formatDateTime(DateTime date){
   return DateFormat('EEE, d MMM, yyyy, hh:mm a').format(date);
+}
+
+
+_showErrorDialog(BuildContext context , String title){
+  showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return ErrorDialog(
+            title: title);
+      });
+}
+
+String _checkRepeatType(EventRepetition repeatPattern){
+  if (repeatPattern.repeatType == "Time"){
+    return DateFormat('d MMM yyyy').format(DateTime.parse(repeatPattern.repeatUntil!));
+  }
+  else if(repeatPattern.repeatType == "Count"){
+    return "${repeatPattern.numOccurrence} Occurrences";
+  }
+  return "Never";
 }

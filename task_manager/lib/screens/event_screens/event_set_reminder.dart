@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:task_manager/customWidgets/custom_picker.dart';
 import 'package:task_manager/Custom_Fonts.dart';
+import 'package:task_manager/database_service/sqfliteService.dart';
 import 'package:task_manager/model/task/taskReminder_modal.dart';
 
 import '../../customWidgets/GraadientCheckBox.dart';
+import '../../model/event/event_modal.dart';
 import '../../model/event/event_reminder_modal.dart';
 
-class EventRemindersScreen extends StatefulWidget {
-  final List<EventReminder>? reminders;
+class EventSetRemindersScreen extends StatefulWidget {
+  final Event event;
 
-  const EventRemindersScreen(
-      {super.key, required this.reminders});
+  const EventSetRemindersScreen(
+      {super.key, required this.event});
 
   @override
-  _EventRemindersScreenState createState() => _EventRemindersScreenState();
+  _EventSetRemindersScreenState createState() => _EventSetRemindersScreenState();
 }
 
-class _EventRemindersScreenState extends State<EventRemindersScreen> {
+class _EventSetRemindersScreenState extends State<EventSetRemindersScreen> {
   List<String> options = [
     "5 Minutes",
     "1 Hour",
@@ -26,11 +28,11 @@ class _EventRemindersScreenState extends State<EventRemindersScreen> {
 
   @override
   void initState() {
-    if(widget.reminders != null){
-      for(EventReminder reminder in widget.reminders!) {
+    if(widget.event.reminders != null){
+      for(EventReminder reminder in widget.event.reminders!) {
         final option = "${reminder.reminderInterval} ${reminder.reminderUnit}";
         if (option == "0 Minute") {
-          selectedOptions.add("At Time Of Event");
+          selectedOptions.add("At Time Of Task");
         }
         else {
           if (!options.contains(option)) {
@@ -40,7 +42,6 @@ class _EventRemindersScreenState extends State<EventRemindersScreen> {
         }
       }
     }
-    print("Current selected options: $selectedOptions");
     super.initState();
   }
 
@@ -67,8 +68,7 @@ class _EventRemindersScreenState extends State<EventRemindersScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              print("Current selected options: $selectedOptions");
+            onPressed: () async {
               List<EventReminder> reminderList = [];
               if(selectedOptions.contains("At Time Of Event")){
                 selectedOptions.remove("At Time Of Event");
@@ -78,7 +78,9 @@ class _EventRemindersScreenState extends State<EventRemindersScreen> {
                 final parts = selectedOptions[index].split(" ");
                 return EventReminder(reminderInterval: int.parse(parts[0]), reminderUnit: parts[1]);
               });
-              print(reminderList);
+              final db = SqfLiteService();
+              widget.event.reminders = reminderList;
+              await db.modifyEvent(widget.event);
               Navigator.pop(context ,reminderList);
             },
             child: Text(

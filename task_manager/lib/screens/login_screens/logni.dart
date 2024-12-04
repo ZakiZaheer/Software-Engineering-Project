@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:task_manager/screens/login_screens/login.dart';
+import 'package:task_manager/screens/login_screens/SignUpScreen.dart';
 import '../../customWidgets/footer.dart';
 import'forgot_pass.dart';
 
@@ -102,7 +102,7 @@ class _loginPageState extends State<loginPage>{
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           // Process data
-                          print('Login Successful');
+                          Navigator.pushNamed(context, "/classroom");
                         }
                       },
                       child: Text('Login'),

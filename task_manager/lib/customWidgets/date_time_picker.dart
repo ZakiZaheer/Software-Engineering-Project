@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 Future<DateTime?> showCustomDateTimePicker({
   required BuildContext context,
   required String title,
+  DateTime? initialDateTime,
 }) {
   return showModalBottomSheet<DateTime>(
     context: context,
@@ -15,6 +16,7 @@ Future<DateTime?> showCustomDateTimePicker({
     builder: (BuildContext context) {
       return CustomDateTimePicker(
         title: title,
+        initialDateTime: initialDateTime,
       );
     },
   );
@@ -22,8 +24,9 @@ Future<DateTime?> showCustomDateTimePicker({
 
 class CustomDateTimePicker extends StatefulWidget {
   final String title;
+  final DateTime? initialDateTime;
 
-  CustomDateTimePicker({required this.title});
+  const CustomDateTimePicker({super.key, required this.title , this.initialDateTime});
 
   @override
   _CustomDateTimePickerState createState() => _CustomDateTimePickerState();
@@ -38,12 +41,16 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
   @override
   void initState() {
     super.initState();
-    DateTime now = DateTime.now();
-    selectedDate = now;
-    selectedHour =
-        now.hour > 12 ? now.hour - 12 : (now.hour == 0 ? 12 : now.hour);
-    selectedMinute = now.minute;
-    isAM = now.hour < 12;
+    if(widget.initialDateTime != null){
+      selectedDate = widget.initialDateTime!;
+    }
+    else{
+      DateTime now = DateTime.now();
+      selectedDate = now;
+    }
+    selectedHour = selectedDate.hour > 12 ? selectedDate.hour - 12 : (selectedDate.hour == 0 ? 12 : selectedDate.hour);
+    selectedMinute = selectedDate.minute;
+    isAM = selectedDate.hour < 12;
   }
 
   @override
@@ -89,7 +96,9 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
                   child: ListWheelScrollView.useDelegate(
                     physics: FixedExtentScrollPhysics(),
                     itemExtent: 70,
-                    onSelectedItemChanged: (index) {
+                    controller: FixedExtentScrollController(
+                      initialItem: selectedDate.difference(DateTime.now()).inDays, // Calculate relative days difference
+                    ),                    onSelectedItemChanged: (index) {
                       setState(() {
                         final DateTime date =
                             DateTime.now().add(Duration(days: index));
@@ -132,7 +141,7 @@ class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
                 child: SizedBox(
                   height: 120,
                   child: ListWheelScrollView.useDelegate(
-                    physics: FixedExtentScrollPhysics(),
+                    physics: const FixedExtentScrollPhysics(),
                     itemExtent: 40,
                     controller: FixedExtentScrollController(
                         initialItem: selectedHour - 1),
